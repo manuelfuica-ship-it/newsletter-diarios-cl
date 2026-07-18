@@ -12,11 +12,9 @@ from typing import List, Dict, Any
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-from cryptography.fernet import Fernet
 from email_sender import send_email
 from slack_sender import send_to_slack
 
-# Configurar logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -25,49 +23,27 @@ logger = logging.getLogger(__name__)
 
 
 def decrypt_credentials(encrypted: str, password: str) -> List[Dict[str, str]]:
-    """
-    Desencriptar credenciales usando AES (crypto-js compatible).
-    Nota: Usamos una aproximación compatible con crypto-js del cliente.
-    """
+    """Desencriptar credenciales (versión simplificada)."""
     try:
+        from Crypto.Cipher import AES
+        from Crypto.Protocol.KDF import PBKDF2
         import base64
-        from cryptography.hazmat.primitives import hashes
-        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
-        from cryptography.hazmat.backends import default_backend
 
-        # Extraer salt y ciphertext de formato crypto-js
-        # crypto-js usa: "Salted__" + 8 bytes salt + encrypted data
         encrypted_bytes = base64.b64decode(encrypted)
-
+        
         if encrypted_bytes[:8] != b'Salted__':
             raise ValueError("Invalid encrypted format")
 
         salt = encrypted_bytes[8:16]
         ciphertext = encrypted_bytes[16:]
 
-        # Derivar key e IV usando PBKDF2 (como crypto-js)
-        kdf = PBKDF2(
-            algorithm=hashes.MD5(),
-            length=32 + 16,  # 32 para AES-256, 16 para IV
-            salt=salt,
-            iterations=1,
-            backend=default_backend()
-        )
-        key_iv = kdf.derive(password.encode())
+        key_iv = PBKDF2(password, salt, 48, count=1)
         key = key_iv[:32]
         iv = key_iv[32:48]
 
-        # Desencriptar con AES-256-CBC
-        from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-        cipher = Cipher(
-            algorithms.AES(key),
-            modes.CBC(iv),
-            backend=default_backend()
-        )
-        decryptor = cipher.decryptor()
-        plaintext = decryptor.update(ciphertext) + decryptor.finalize()
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        plaintext = cipher.decrypt(ciphertext)
 
-        # Remover PKCS7 padding
         padding_length = plaintext[-1]
         plaintext = plaintext[:-padding_length]
 
@@ -104,12 +80,11 @@ class NewsletterScraper:
         """El Mercurio - RSS disponible públicamente."""
         try:
             logger.info("Scrapeando El Mercurio...")
-            # RSS oficial de El Mercurio
             url = "https://www.elmercurio.com/rss"
             feed = feedparser.parse(url)
 
             count = 0
-            for entry in feed.entries[:10]:  # Top 10 noticias
+            for entry in feed.entries[:10]:
                 self.news_items.append({
                     'diary': 'El Mercurio',
                     'title': entry.get('title', 'Sin título'),
@@ -156,7 +131,6 @@ class NewsletterScraper:
 
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            # Buscar articles (selector puede variar según estructura del sitio)
             articles = soup.find_all('article', limit=10)
 
             count = 0
@@ -221,7 +195,6 @@ class NewsletterScraper:
 
 def main():
     """Función principal."""
-    # Cargar variables de entorno
     encrypted_creds = os.getenv('CREDENTIALS_ENCRYPTED', '')
     encryption_password = os.getenv('ENCRYPTION_PASSWORD', '')
 
@@ -229,7 +202,6 @@ def main():
         logger.error("CREDENTIALS_ENCRYPTED o ENCRYPTION_PASSWORD no configurados")
         return False
 
-    # Desencriptar credenciales
     logger.info("Desencriptando credenciales...")
     try:
         credentials = decrypt_credentials(encrypted_creds, encryption_password)
@@ -240,14 +212,12 @@ def main():
         logger.error(f"Error desencriptando: {e}")
         return False
 
-    # Ejecutar scraper
     scraper = NewsletterScraper(credentials)
     newsletter = scraper.scrape_all()
 
     if newsletter['total_items'] == 0:
         logger.warning("No se recopilaron noticias")
 
-    # Enviar newsletter
     success = True
     try:
         send_email(newsletter)
