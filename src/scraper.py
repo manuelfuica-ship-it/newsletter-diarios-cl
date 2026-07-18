@@ -6,7 +6,6 @@ from datetime import datetime
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-from email_sender import send_email
 from slack_sender import send_to_slack
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -133,22 +132,13 @@ def main():
     scraper = NewsletterScraper(credentials)
     newsletter = scraper.scrape_all()
 
-    success = True
-    try:
-        send_email(newsletter)
-        logger.info("Email enviado")
-    except Exception as e:
-        logger.error(f"Error email: {e}")
-        success = False
-
     try:
         send_to_slack(newsletter)
-        logger.info("Slack enviado")
+        logger.info("Newsletter enviado a Slack ✅")
+        return True
     except Exception as e:
         logger.error(f"Error Slack: {e}")
-        success = False
-
-    return success
+        return False
 
 if __name__ == '__main__':
     import sys
