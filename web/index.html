@@ -614,9 +614,10 @@
             </div>
             <div class="modal-body">
                 <div class="modal-description" id="modalDescription"></div>
+                <iframe id="modalIframe" style="width: 100%; height: 400px; border: none; border-radius: 6px; margin: 20px 0; display: none;"></iframe>
                 <div class="modal-footer">
                     <div class="modal-date" id="modalDate"></div>
-                    <a id="modalLink" class="modal-link" target="_blank">Leer en el sitio →</a>
+                    <a id="modalLink" class="modal-link" target="_blank">Abrir en nueva ventana →</a>
                 </div>
             </div>
         </div>
@@ -699,10 +700,32 @@
 
         function openModal(title, description, source, date, link) {
             document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalDescription').textContent = description;
+            document.getElementById('modalDescription').textContent = description || 'Cargando...';
             document.getElementById('modalSource').textContent = source;
             document.getElementById('modalDate').textContent = formatDate(date);
             document.getElementById('modalLink').href = link;
+
+            // Cargar el artículo completo en iframe
+            const iframe = document.getElementById('modalIframe');
+            if (link) {
+                // Asegurarse de que el link sea completo (agregar dominio si es necesario)
+                let fullLink = link;
+                if (link.startsWith('/')) {
+                    // Determinar el dominio basado en la fuente
+                    const domains = {
+                        'El Mercurio': 'https://www.elmercurio.com',
+                        'La Tercera': 'https://www.latercera.com',
+                        'La Segunda': 'https://www.lasegunda.com',
+                        'DF': 'https://www.df.cl'
+                    };
+                    fullLink = (domains[source] || 'https://www.example.com') + link;
+                }
+                iframe.src = fullLink;
+                iframe.style.display = 'block';
+            } else {
+                iframe.style.display = 'none';
+            }
+
             document.getElementById('newsModal').classList.add('active');
         }
 
