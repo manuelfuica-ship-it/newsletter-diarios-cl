@@ -50,6 +50,39 @@ class NewsletterScraper:
             by_diary[diary].append(item)
         return by_diary
 
+    def extract_summary(self, url, max_chars=1500):
+        """Extrae un resumen más largo de un artículo (primeros párrafos)"""
+        try:
+            response = self.session.get(url, timeout=10)
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            # Buscar contenedor principal
+            article = soup.find(['article', 'main']) or soup.find('div', class_=lambda x: x and 'content' in str(x).lower())
+            if not article:
+                article = soup.body
+
+            if article:
+                paragraphs = article.find_all('p')
+                summary_parts = []
+                total_chars = 0
+
+                for p in paragraphs:
+                    text = p.get_text().strip()
+                    if text and len(text) > 20:
+                        if total_chars + len(text) < max_chars:
+                            summary_parts.append(text)
+                            total_chars += len(text) + 2
+                        else:
+                            break
+
+                if summary_parts:
+                    summary = '\n\n'.join(summary_parts)
+                    if len(summary) > 300:
+                        return summary
+        except:
+            pass
+        return None
+
     def _login_mercurio(self):
         """Intenta hacer login en El Mercurio"""
         try:
@@ -87,32 +120,39 @@ class NewsletterScraper:
                         logger.info(f"El Mercurio (Selenium): {len(selenium_articles)} noticias")
                         return
 
-            # Fallback
+            # Fallback mejorado con resúmenes
             self._login_mercurio()
             response = self.session.get("https://www.elmercurio.com", timeout=15)
             soup = BeautifulSoup(response.content, 'html.parser')
-            articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=25)
+            articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=20)
 
+            count = 0
             for article in articles:
                 try:
                     title_elem = article.find(['h1', 'h2', 'h3', 'a'])
                     link_elem = article.find('a', href=True)
+                    link = link_elem.get('href', '') if link_elem else ''
 
-                    if title_elem and link_elem:
+                    if title_elem and link:
                         title = title_elem.get_text().strip()
                         if len(title) > 5:
+                            # Extraer resumen más largo
+                            full_link = link if link.startswith('http') else f"https://www.elmercurio.com{link}"
+                            description = self.extract_summary(full_link) or title
+
                             self.news_items.append({
                                 'diary': 'El Mercurio',
                                 'title': title,
-                                'description': '',
-                                'link': link_elem.get('href', ''),
+                                'description': description,
+                                'link': full_link,
                                 'published': '',
                                 'timestamp': datetime.now().isoformat()
                             })
+                            count += 1
                 except:
                     pass
 
-            logger.info(f"El Mercurio (fallback): {len([x for x in self.news_items if x['diary'] == 'El Mercurio'])} noticias")
+            logger.info(f"El Mercurio (resúmenes mejorados): {count} noticias")
         except Exception as e:
             logger.error(f"El Mercurio: {e}")
 
@@ -191,32 +231,34 @@ class NewsletterScraper:
                         logger.info(f"La Segunda (Selenium): {len(selenium_articles)} noticias")
                         return
 
-            # Fallback a método simple
+            # Fallback mejorado con resúmenes más largos
             self._login_segunda()
             response = self.session.get("https://www.lasegunda.com", timeout=15)
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            articles = soup.find_all('article', limit=30)
+            articles = soup.find_all('article', limit=20)
             if not articles:
-                articles = soup.find_all(['div', 'li'], class_=lambda x: x and 'item' in x.lower(), limit=30)
+                articles = soup.find_all(['div', 'li'], class_=lambda x: x and 'item' in x.lower(), limit=20)
 
             count = 0
             for article in articles:
                 try:
                     title_elem = article.find(['h2', 'h3', 'a'])
                     link_elem = article.find('a', href=True)
-                    desc_elem = article.find(['p', 'span'], class_=lambda x: x and ('summar' in str(x).lower() or 'desc' in str(x).lower()))
+                    link = link_elem.get('href', '') if link_elem else ''
 
-                    if title_elem and link_elem:
+                    if title_elem and link:
                         title = title_elem.get_text().strip()
-                        description = desc_elem.get_text().strip() if desc_elem else ''
-
                         if len(title) > 5:
+                            # Extraer resumen más largo
+                            full_link = link if link.startswith('http') else f"https://www.lasegunda.com{link}"
+                            description = self.extract_summary(full_link) or title
+
                             self.news_items.append({
                                 'diary': 'La Segunda',
                                 'title': title,
                                 'description': description,
-                                'link': link_elem.get('href', ''),
+                                'link': full_link,
                                 'published': '',
                                 'timestamp': datetime.now().isoformat()
                             })
@@ -224,7 +266,7 @@ class NewsletterScraper:
                 except:
                     pass
 
-            logger.info(f"La Segunda (fallback): {count} noticias")
+            logger.info(f"La Segunda (resúmenes mejorados): {count} noticias")
         except Exception as e:
             logger.error(f"La Segunda: {e}")
 
@@ -265,32 +307,39 @@ class NewsletterScraper:
                         logger.info(f"DF (Selenium): {len(selenium_articles)} noticias")
                         return
 
-            # Fallback
+            # Fallback mejorado con resúmenes
             self._login_df()
             response = self.session.get("https://www.df.cl", timeout=15)
             soup = BeautifulSoup(response.content, 'html.parser')
-            articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=25)
+            articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=20)
 
+            count = 0
             for article in articles:
                 try:
                     title_elem = article.find(['h1', 'h2', 'h3', 'a'])
                     link_elem = article.find('a', href=True)
+                    link = link_elem.get('href', '') if link_elem else ''
 
-                    if title_elem and link_elem:
+                    if title_elem and link:
                         title = title_elem.get_text().strip()
                         if len(title) > 5:
+                            # Extraer resumen más largo
+                            full_link = link if link.startswith('http') else f"https://www.df.cl{link}"
+                            description = self.extract_summary(full_link) or title
+
                             self.news_items.append({
                                 'diary': 'DF',
                                 'title': title,
-                                'description': '',
-                                'link': link_elem.get('href', ''),
+                                'description': description,
+                                'link': full_link,
                                 'published': '',
                                 'timestamp': datetime.now().isoformat()
                             })
+                            count += 1
                 except:
                     pass
 
-            logger.info(f"DF (fallback): {len([x for x in self.news_items if x['diary'] == 'DF'])} noticias")
+            logger.info(f"DF (resúmenes mejorados): {count} noticias")
         except Exception as e:
             logger.error(f"DF: {e}")
 
