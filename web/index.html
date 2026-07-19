@@ -674,9 +674,20 @@
                     news.title.toLowerCase().includes(search) ||
                     news.description.toLowerCase().includes(search);
 
-                const newsDate = new Date(news.published).toISOString().split('T')[0];
-                const matchDateFrom = !dateFrom || newsDate >= dateFrom;
-                const matchDateTo = !dateTo || newsDate <= dateTo;
+                let newsDate = '';
+                try {
+                    if (news.published) {
+                        const date = new Date(news.published);
+                        if (!isNaN(date.getTime())) {
+                            newsDate = date.toISOString().split('T')[0];
+                        }
+                    }
+                } catch (e) {
+                    newsDate = '';
+                }
+
+                const matchDateFrom = !dateFrom || !newsDate || newsDate >= dateFrom;
+                const matchDateTo = !dateTo || !newsDate || newsDate <= dateTo;
 
                 return matchSearch && matchDateFrom && matchDateTo;
             });
