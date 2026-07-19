@@ -2,55 +2,14 @@
 import os
 import json
 import logging
-import base64
-import hashlib
 from datetime import datetime
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-from Crypto.Cipher import AES
 from slack_sender import send_to_slack
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-def decrypt_credentials(encrypted_data, password):
-    """Descencripta credenciales encriptadas con crypto-js AES-256"""
-    try:
-        encrypted_bytes = base64.b64decode(encrypted_data)
-
-        if not encrypted_bytes.startswith(b'Salted__'):
-            raise ValueError("Formato de encriptación inválido")
-
-        salt = encrypted_bytes[8:16]
-        ciphertext = encrypted_bytes[16:]
-
-        def evp_bytes_to_key(password, salt, key_len, iv_len):
-            m = []
-            i = 0
-            while len(b''.join(m)) < (key_len + iv_len):
-                md5 = hashlib.md5()
-                if i == 0:
-                    data = password.encode() + salt
-                else:
-                    data = m[i - 1] + password.encode() + salt
-                md5.update(data)
-                m.append(md5.digest())
-                i += 1
-            ms = b''.join(m)
-            return ms[:key_len], ms[key_len:key_len + iv_len]
-
-        key, iv = evp_bytes_to_key(password, salt, 32, 16)
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        decrypted = cipher.decrypt(ciphertext)
-
-        padding_len = decrypted[-1]
-        decrypted = decrypted[:-padding_len]
-
-        return json.loads(decrypted.decode('utf-8'))
-    except Exception as e:
-        logger.error(f"Error desencriptando credenciales: {e}")
-        return None
 
 class NewsletterScraper:
     def __init__(self, credentials):
@@ -294,19 +253,18 @@ def save_news_to_json(newsletter, output_file='web/data/news.json'):
         return False
 
 def main():
-    encrypted_creds = os.getenv('CREDENTIALS_ENCRYPTED', '')
-    password = os.getenv('ENCRYPTION_PASSWORD', '')
+    credentials_json = os.getenv('CREDENTIALS_JSON', '')
 
-    if not encrypted_creds or not password:
-        logger.error("CREDENTIALS_ENCRYPTED o ENCRYPTION_PASSWORD no configurados")
+    if not credentials_json:
+        logger.error("CREDENTIALS_JSON no configurado")
         return False
 
-    credentials = decrypt_credentials(encrypted_creds, password)
-    if not credentials:
-        logger.error("Error al desencriptar credenciales")
+    try:
+        credentials = json.loads(credentials_json)
+        logger.info(f"Credenciales cargadas: {len(credentials)} diarios")
+    except Exception as e:
+        logger.error(f"Error parsing CREDENTIALS_JSON: {e}")
         return False
-
-    logger.info(f"Credenciales desencriptadas: {len(credentials)} diarios")
 
     scraper = NewsletterScraper(credentials)
     newsletter = scraper.scrape_all()

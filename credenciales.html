@@ -409,16 +409,30 @@
             document.getElementById('encryptedOutput').value = encrypted;
         }
 
-        // Copiar al portapapeles
+        // Copiar al portapapeles (JSON sin encriptar para GitHub)
         function copyToClipboard() {
-            const textarea = document.getElementById('encryptedOutput');
-            if (!textarea.value) {
-                showAlert('No hay contenido para copiar', 'error');
+            const masterPassword = document.getElementById('masterPassword').value;
+            if (!masterPassword) {
+                showAlert('Ingresa la contraseña maestra primero', 'error');
                 return;
             }
+
+            const credentials = loadCredentials();
+            if (!credentials || credentials.length === 0) {
+                showAlert('No hay credenciales guardadas', 'error');
+                return;
+            }
+
+            // Copiar JSON sin encriptar (GitHub Secrets lo encriptará)
+            const jsonStr = JSON.stringify(credentials);
+            const textarea = document.createElement('textarea');
+            textarea.value = jsonStr;
+            document.body.appendChild(textarea);
             textarea.select();
             document.execCommand('copy');
-            showAlert('Copiado al portapapeles ✓', 'success');
+            document.body.removeChild(textarea);
+
+            showAlert('Credenciales copiadas al portapapeles ✓', 'success');
         }
 
         // Mostrar alertas
