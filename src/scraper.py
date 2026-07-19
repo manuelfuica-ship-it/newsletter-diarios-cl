@@ -159,28 +159,37 @@ class NewsletterScraper:
 
             response = self.session.get("https://www.lasegunda.com", timeout=15)
             soup = BeautifulSoup(response.content, 'html.parser')
-            articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=25)
 
+            # Buscar noticias por múltiples selectores
+            articles = soup.find_all('article', limit=30)
+            if not articles:
+                articles = soup.find_all(['div', 'li'], class_=lambda x: x and 'item' in x.lower(), limit=30)
+
+            count = 0
             for article in articles:
                 try:
-                    title_elem = article.find(['h1', 'h2', 'h3', 'a'])
+                    title_elem = article.find(['h2', 'h3', 'a'])
                     link_elem = article.find('a', href=True)
+                    desc_elem = article.find(['p', 'span'], class_=lambda x: x and ('summar' in str(x).lower() or 'desc' in str(x).lower()))
 
                     if title_elem and link_elem:
                         title = title_elem.get_text().strip()
+                        description = desc_elem.get_text().strip() if desc_elem else ''
+
                         if len(title) > 5:
                             self.news_items.append({
                                 'diary': 'La Segunda',
                                 'title': title,
-                                'description': '',
+                                'description': description,
                                 'link': link_elem.get('href', ''),
                                 'published': '',
                                 'timestamp': datetime.now().isoformat()
                             })
+                            count += 1
                 except:
                     pass
 
-            logger.info(f"La Segunda: {len([x for x in self.news_items if x['diary'] == 'La Segunda'])} noticias")
+            logger.info(f"La Segunda: {count} noticias")
         except Exception as e:
             logger.error(f"La Segunda: {e}")
 
