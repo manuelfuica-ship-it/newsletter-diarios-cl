@@ -10,105 +10,122 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #f5f6fa;
+            color: #2c3e50;
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
+            padding: 20px;
         }
 
         header {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header .title {
-            flex: 1;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         header h1 {
-            color: #667eea;
+            font-size: 36px;
+            font-weight: 700;
             margin-bottom: 10px;
-            font-size: 32px;
+            letter-spacing: -0.5px;
         }
 
-        header .actions {
+        header p {
+            font-size: 16px;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .header-actions {
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .refresh-btn {
             background: #27ae60;
-            padding: 10px 16px;
+            padding: 12px 24px;
             border-radius: 6px;
             border: none;
             color: white;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.2s;
+            font-size: 14px;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 14px;
         }
 
         .refresh-btn:hover {
             background: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
         }
 
         .refresh-btn.loading {
-            opacity: 0.6;
+            opacity: 0.7;
             pointer-events: none;
         }
 
         .last-update {
-            font-size: 12px;
-            color: #999;
-            margin-top: 8px;
+            font-size: 13px;
+            opacity: 0.9;
         }
 
         .tabs {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            border-bottom: 2px solid #eee;
+            gap: 5px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e6ed;
         }
 
         .tab {
-            padding: 10px 20px;
+            padding: 12px 24px;
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
-            color: #999;
+            color: #7f8c8d;
             border-bottom: 3px solid transparent;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
 
         .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+            color: #2a5298;
+            border-bottom-color: #2a5298;
+        }
+
+        .tab:hover {
+            color: #2a5298;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .filters {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 8px;
+            padding: 25px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             display: flex;
-            gap: 15px;
+            gap: 20px;
             flex-wrap: wrap;
             align-items: center;
         }
@@ -121,15 +138,22 @@
 
         .filter-group label {
             font-weight: 600;
-            color: #333;
+            color: #2c3e50;
             font-size: 14px;
         }
 
-        .filter-group input, .filter-group select {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
+        input[type="search"], .filter-group input, .filter-group select {
+            padding: 10px 14px;
+            border: 1px solid #dce4ec;
             border-radius: 6px;
             font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        input[type="search"]:focus, .filter-group input:focus, .filter-group select:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
         }
 
         input[type="search"] {
@@ -139,17 +163,19 @@
 
         button {
             padding: 10px 20px;
-            background: #667eea;
+            background: #2a5298;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 14px;
             transition: all 0.2s;
         }
 
         button:hover {
-            background: #5568d3;
+            background: #1e3c72;
+            transform: translateY(-1px);
         }
 
         .stats-grid {
@@ -161,182 +187,371 @@
 
         .stat-card {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             text-align: center;
+            border-left: 4px solid #2a5298;
         }
 
         .stat-card .number {
-            font-size: 32px;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 36px;
+            font-weight: 700;
+            color: #2a5298;
+            margin-bottom: 8px;
         }
 
         .stat-card .label {
-            color: #999;
-            font-size: 14px;
-            margin-top: 5px;
+            color: #7f8c8d;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .charts {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
 
         .chart-container {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
         .chart-container h3 {
             margin-bottom: 20px;
-            color: #333;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 700;
         }
 
-        .categories {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .category-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
         }
 
-        .category-section {
+        .category-badge {
             background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .category-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .category-header .count {
-            float: right;
-            background: rgba(255,255,255,0.3);
-            padding: 4px 12px;
+            border: 1px solid #dce4ec;
+            padding: 8px 16px;
             border-radius: 20px;
             font-size: 13px;
-        }
-
-        .news-items {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-
-        .news-item {
-            padding: 15px;
-            border-left: 4px solid #667eea;
-            background: #f9f9f9;
-            border-radius: 6px;
+            font-weight: 600;
+            color: #2a5298;
+            cursor: pointer;
             transition: all 0.2s;
         }
 
-        .news-item h3 {
-            color: #333;
-            font-size: 15px;
-            margin-bottom: 8px;
+        .category-badge:hover {
+            background: #2a5298;
+            color: white;
+            border-color: #2a5298;
+        }
+
+        .category-badge.active {
+            background: #2a5298;
+            color: white;
+            border-color: #2a5298;
+        }
+
+        .news-grid {
+            display: grid;
+            gap: 25px;
+        }
+
+        .news-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #2a5298;
+        }
+
+        .news-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .news-card-content {
+            padding: 24px;
+        }
+
+        .news-source {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .news-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 12px;
             line-height: 1.4;
         }
 
-        .news-item .source {
-            color: #667eea;
+        .news-description {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 120px;
+        }
+
+        .news-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e0e6ed;
+            padding-top: 16px;
+        }
+
+        .news-date {
             font-size: 12px;
+            color: #999;
+        }
+
+        .news-link {
+            background: #2a5298;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
             font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .news-link:hover {
+            background: #1e3c72;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-title {
+            flex: 1;
+        }
+
+        .modal-title h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .modal-source {
+            display: inline-block;
+            background: rgba(255,255,255,0.3);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
             text-transform: uppercase;
         }
 
-        .news-item .summary {
-            color: #666;
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            opacity: 0.8;
+        }
+
+        .modal-body {
+            padding: 40px;
+        }
+
+        .modal-description {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e0e6ed;
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-date {
             font-size: 13px;
-            line-height: 1.5;
-            margin: 8px 0;
-        }
-
-        .news-item .date {
             color: #999;
-            font-size: 12px;
         }
 
-        .news-item a {
-            display: inline-block;
-            color: #667eea;
-            text-decoration: none;
-            font-size: 12px;
+        .modal-link {
+            background: #2a5298;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
             font-weight: 600;
-            margin-top: 8px;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.2s;
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .pdf-btn {
-            background: #3498db;
-        }
-
-        .pdf-btn:hover {
-            background: #2980b9;
+        .modal-link:hover {
+            background: #1e3c72;
+            transform: translateY(-2px);
         }
 
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: white;
-            padding: 15px 20px;
+            background: #27ae60;
+            color: white;
+            padding: 16px 24px;
             border-radius: 6px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            z-index: 1000;
-            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: 600;
+            z-index: 2000;
+            animation: slideInRight 0.3s ease;
         }
 
-        .notification.success {
-            border-left: 4px solid #27ae60;
+        .notification.error {
+            background: #e74c3c;
         }
 
-        .notification.loading {
-            border-left: 4px solid #3498db;
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #2c3e50;
         }
 
         @media (max-width: 768px) {
-            header { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .filters { flex-direction: column; }
-            .pdf-btn { width: 100%; }
+            .charts {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 24px;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+
+            .modal-header {
+                padding: 20px;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="title">
+            <div>
                 <h1>📰 Newsletter Diarios</h1>
                 <p>Recopilador automático de noticias de medios chilenos</p>
-                <div class="last-update">Última actualización: <span id="lastUpdate">-</span></div>
             </div>
-            <div class="actions">
+            <div class="header-actions">
                 <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">
                     <span id="refreshIcon">🔄</span>
                     <span id="refreshText">Actualizar</span>
@@ -344,17 +559,16 @@
             </div>
         </header>
 
+        <div class="last-update" id="lastUpdate"></div>
+
         <div class="tabs">
             <button class="tab active" onclick="switchTab('news')">📰 Noticias</button>
             <button class="tab" onclick="switchTab('stats')">📊 Estadísticas</button>
         </div>
 
-        <!-- TAB NOTICIAS -->
         <div id="news" class="tab-content active">
             <div class="filters">
-                <div class="filter-group">
-                    <input type="search" id="searchInput" placeholder="Buscar noticias..." onkeyup="filterNews()">
-                </div>
+                <input type="search" id="searchInput" placeholder="Buscar noticias..." onkeyup="filterNews()">
                 <div class="filter-group">
                     <label>Desde:</label>
                     <input type="date" id="dateFrom" onchange="filterNews()">
@@ -363,63 +577,46 @@
                     <label>Hasta:</label>
                     <input type="date" id="dateTo" onchange="filterNews()">
                 </div>
-                <div class="filter-group">
-                    <label>Categoría:</label>
-                    <select id="categoryFilter" onchange="filterNews()">
-                        <option value="">Todas</option>
-                        <option value="💼 Economía">💼 Economía</option>
-                        <option value="🏛️ Política">🏛️ Política</option>
-                        <option value="⚽ Deportes">⚽ Deportes</option>
-                        <option value="🌍 Internacional">🌍 Internacional</option>
-                        <option value="💻 Tecnología">💻 Tecnología</option>
-                        <option value="🎨 Cultura">🎨 Cultura</option>
-                        <option value="🏥 Salud">🏥 Salud</option>
-                        <option value="🎰 Casinos">🎰 Casinos de Juego + Online</option>
-                    </select>
-                </div>
-                <button class="pdf-btn" onclick="exportPDF()">📄 PDF</button>
+                <button onclick="downloadPDF()">📥 Descargar PDF</button>
             </div>
 
-            <div class="stats">
-                <p><span id="newsCount">0</span> noticias • <span id="diaryCount">0</span> medios</p>
-            </div>
-
-            <div class="categories" id="newsContainer"></div>
+            <div class="category-badges" id="categoryBadges"></div>
+            <div id="newsContainer" class="news-grid"></div>
         </div>
 
-        <!-- TAB ESTADÍSTICAS -->
         <div id="stats" class="tab-content">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="number" id="totalNews">0</div>
-                    <div class="label">Total de Noticias</div>
-                </div>
-                <div class="stat-card">
-                    <div class="number" id="totalDiaries">0</div>
-                    <div class="label">Medios</div>
-                </div>
-                <div class="stat-card">
-                    <div class="number" id="totalDays">0</div>
-                    <div class="label">Días de Datos</div>
-                </div>
-                <div class="stat-card">
-                    <div class="number" id="avgPerDay">0</div>
-                    <div class="label">Promedio/Día</div>
-                </div>
-            </div>
-
+            <div class="stats-grid" id="statsGrid"></div>
             <div class="charts">
                 <div class="chart-container">
                     <h3>Noticias por Medio</h3>
-                    <canvas id="diaryChart"></canvas>
+                    <canvas id="sourceChart"></canvas>
                 </div>
                 <div class="chart-container">
                     <h3>Noticias por Categoría</h3>
                     <canvas id="categoryChart"></canvas>
                 </div>
                 <div class="chart-container">
-                    <h3>Noticias últimos 7 días</h3>
+                    <h3>Últimos 7 Días</h3>
                     <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="newsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div class="modal-source" id="modalSource"></div>
+                    <h2 id="modalTitle"></h2>
+                </div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-description" id="modalDescription"></div>
+                <div class="modal-footer">
+                    <div class="modal-date" id="modalDate"></div>
+                    <a id="modalLink" class="modal-link" target="_blank">Leer en el sitio →</a>
                 </div>
             </div>
         </div>
@@ -427,215 +624,205 @@
 
     <script>
         let allNews = [];
-        let charts = {};
-
-        const categoryKeywords = {
-            "💼 Economía": ["economía", "banco", "dólar", "bolsa", "empresa"],
-            "🏛️ Política": ["gobierno", "diputado", "congreso", "ministro"],
-            "⚽ Deportes": ["fútbol", "deportes", "equipo", "jugador"],
-            "🌍 Internacional": ["mundo", "país", "trump", "internacional"],
-            "💻 Tecnología": ["tecnología", "app", "ia", "inteligencia artificial"],
-            "🎨 Cultura": ["arte", "música", "película", "cine"],
-            "🏥 Salud": ["salud", "médico", "covid", "virus"],
-            "🎰 Casinos": ["casino", "juego", "apuestas", "online"]
-        };
-
-        function categorizeNews(news) {
-            const text = (news.title + " " + (news.description || "")).toLowerCase();
-            for (const [cat, keywords] of Object.entries(categoryKeywords)) {
-                if (keywords.some(k => text.includes(k))) return cat;
-            }
-            return "📚 Otros";
-        }
-
-        function truncateSummary(text, max = 200) {
-            if (!text) return "";
-            return text.length > max ? text.substring(0, max) + "..." : text;
-        }
-
-        function showNotification(message, type = 'success') {
-            const notif = document.createElement('div');
-            notif.className = `notification ${type}`;
-            notif.textContent = message;
-            document.body.appendChild(notif);
-            setTimeout(() => notif.remove(), 3000);
-        }
+        let selectedCategory = 'Todas';
+        let sourceCharts = {};
 
         async function loadNews() {
             try {
                 const response = await fetch('data/news.json?t=' + Date.now());
-                if (response.ok) {
-                    allNews = await response.json();
-                    allNews.forEach(n => n.category = n.category || categorizeNews(n));
-                    updateLastUpdate();
-                } else {
-                    loadSampleNews();
-                }
-            } catch (e) {
-                loadSampleNews();
+                allNews = await response.json();
+                renderNews();
+                updateStats();
+                updateLastUpdate();
+            } catch (error) {
+                console.error('Error cargando noticias:', error);
+                showNotification('Error al cargar noticias', 'error');
             }
-            renderNews();
-            updateStats();
         }
 
-        function updateLastUpdate() {
-            const now = new Date();
-            const time = now.toLocaleTimeString('es-CL');
-            const date = now.toLocaleDateString('es-CL');
-            document.getElementById('lastUpdate').textContent = `${date} ${time}`;
-        }
-
-        function loadSampleNews() {
-            allNews = [
-                { title: "Chile lidera en tecnología", source: "El Mercurio", description: "Inversiones en IA crecen...", link: "#", date: new Date().toISOString().split('T')[0], category: "💻 Tecnología", diary: "El Mercurio" },
-                { title: "Banco Central mantiene tasa", source: "DF", description: "Política monetaria sin cambios...", link: "#", date: new Date().toISOString().split('T')[0], category: "💼 Economía", diary: "DF" },
-                { title: "Colo-Colo en Libertadores", source: "La Tercera", description: "Equipo avanza en competición...", link: "#", date: new Date().toISOString().split('T')[0], category: "⚽ Deportes", diary: "La Tercera" },
-            ];
-        }
-
-        function renderNews(newsData = allNews) {
+        function renderNews() {
+            const filtered = getFilteredNews();
             const container = document.getElementById('newsContainer');
-            const grouped = {};
 
-            newsData.forEach(news => {
-                const cat = news.category;
-                if (!grouped[cat]) grouped[cat] = [];
-                grouped[cat].push(news);
-            });
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h2>No hay noticias</h2><p>Intenta cambiar los filtros</p></div>';
+                return;
+            }
 
-            container.innerHTML = Object.entries(grouped).map(([cat, items]) => `
-                <div class="category-section">
-                    <div class="category-header">${cat} <span class="count">${items.length}</span></div>
-                    <div class="news-items">
-                        ${items.map(item => `
-                            <div class="news-item">
-                                <div class="source">${item.source || item.diary}</div>
-                                <h3>${item.title}</h3>
-                                <div class="date">${new Date(item.date).toLocaleDateString('es-CL')}</div>
-                                <div class="summary">${truncateSummary(item.description)}</div>
-                                <a href="${item.link}" target="_blank">Leer más →</a>
-                            </div>
-                        `).join('')}
+            container.innerHTML = filtered.map(news => `
+                <div class="news-card">
+                    <div class="news-card-content">
+                        <div class="news-source">${news.diary}</div>
+                        <h3 class="news-title">${escapeHtml(news.title)}</h3>
+                        <p class="news-description">${escapeHtml(news.description || 'Sin descripción')}</p>
+                        <div class="news-footer">
+                            <span class="news-date">${formatDate(news.published)}</span>
+                            <button class="news-link" onclick="openModal('${escapeAttr(news.title)}', '${escapeAttr(news.description || '')}', '${escapeAttr(news.diary)}', '${escapeAttr(news.published)}', '${escapeAttr(news.link)}')">Leer más</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
-
-            document.getElementById('newsCount').textContent = newsData.length;
-            document.getElementById('diaryCount').textContent = new Set(newsData.map(n => n.source || n.diary)).size;
         }
 
-        function filterNews() {
+        function getFilteredNews() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const dateFrom = document.getElementById('dateFrom').value;
             const dateTo = document.getElementById('dateTo').value;
-            const category = document.getElementById('categoryFilter').value;
 
-            let filtered = allNews.filter(n => {
-                const matchSearch = !search || n.title.toLowerCase().includes(search) || (n.description || "").toLowerCase().includes(search);
-                const matchDate = (!dateFrom || n.date >= dateFrom) && (!dateTo || n.date <= dateTo);
-                const matchCategory = !category || n.category === category;
-                return matchSearch && matchDate && matchCategory;
+            return allNews.filter(news => {
+                const matchSearch = !search ||
+                    news.title.toLowerCase().includes(search) ||
+                    news.description.toLowerCase().includes(search);
+
+                const newsDate = new Date(news.published).toISOString().split('T')[0];
+                const matchDateFrom = !dateFrom || newsDate >= dateFrom;
+                const matchDateTo = !dateTo || newsDate <= dateTo;
+
+                return matchSearch && matchDateFrom && matchDateTo;
             });
-
-            renderNews(filtered);
         }
 
-        async function manualRefresh() {
-            const btn = document.getElementById('refreshBtn');
-            const icon = document.getElementById('refreshIcon');
-            const text = document.getElementById('refreshText');
+        function filterNews() {
+            renderNews();
+        }
 
-            btn.classList.add('loading');
-            icon.textContent = '⏳';
-            text.textContent = 'Actualizando...';
+        function openModal(title, description, source, date, link) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalDescription').textContent = description;
+            document.getElementById('modalSource').textContent = source;
+            document.getElementById('modalDate').textContent = formatDate(date);
+            document.getElementById('modalLink').href = link;
+            document.getElementById('newsModal').classList.add('active');
+        }
 
-            try {
-                await new Promise(r => setTimeout(r, 1000));
-                await loadNews();
-                showNotification('✅ Noticias actualizadas correctamente', 'success');
-            } catch (e) {
-                showNotification('❌ Error al actualizar', 'error');
-            } finally {
-                btn.classList.remove('loading');
-                icon.textContent = '🔄';
-                text.textContent = 'Actualizar';
-            }
+        function closeModal() {
+            document.getElementById('newsModal').classList.remove('active');
         }
 
         function updateStats() {
-            const total = allNews.length;
-            const diaries = new Set(allNews.map(n => n.source || n.diary)).size;
-            const days = new Set(allNews.map(n => n.date)).size;
-            const avg = days > 0 ? Math.round(total / days) : 0;
+            const statsGrid = document.getElementById('statsGrid');
+            const totalNews = allNews.length;
+            const medios = new Set(allNews.map(n => n.diary)).size;
+            const days = new Set(allNews.map(n => new Date(n.published).toISOString().split('T')[0])).size;
 
-            document.getElementById('totalNews').textContent = total;
-            document.getElementById('totalDiaries').textContent = diaries;
-            document.getElementById('totalDays').textContent = days;
-            document.getElementById('avgPerDay').textContent = avg;
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="number">${totalNews}</div>
+                    <div class="label">Total Noticias</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">${medios}</div>
+                    <div class="label">Medios</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">${days}</div>
+                    <div class="label">Días</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">${(totalNews / days).toFixed(1)}</div>
+                    <div class="label">Promedio/Día</div>
+                </div>
+            `;
 
-            const byDiary = {};
-            allNews.forEach(n => {
-                const d = n.source || n.diary;
-                byDiary[d] = (byDiary[d] || 0) + 1;
+            updateCharts();
+        }
+
+        function updateCharts() {
+            const sourceData = {};
+            const categoryData = {
+                'Economía': 0, 'Política': 0, 'Deportes': 0, 'Internacional': 0,
+                'Tecnología': 0, 'Cultura': 0, 'Salud': 0, 'Casinos': 0, 'Otros': 0
+            };
+
+            allNews.forEach(news => {
+                sourceData[news.diary] = (sourceData[news.diary] || 0) + 1;
+                const category = getCategoryFromTitle(news.title);
+                categoryData[category]++;
             });
 
-            if (charts.diary) charts.diary.destroy();
-            const ctx1 = document.getElementById('diaryChart').getContext('2d');
-            charts.diary = new Chart(ctx1, {
+            updateSourceChart(sourceData);
+            updateCategoryChart(categoryData);
+            updateTrendsChart();
+        }
+
+        function getCategoryFromTitle(title) {
+            const keywords = {
+                'Economía': ['mercado', 'bolsa', 'dólar', 'economía', 'impuestos', 'exportación', 'empresa'],
+                'Política': ['gobierno', 'congreso', 'presidente', 'senador', 'reforma', 'ley', 'política'],
+                'Deportes': ['fútbol', 'deporte', 'campeonato', 'jugador', 'equipo', 'partido'],
+                'Internacional': ['international', 'mundial', 'país', 'eeuu', 'china', 'europa'],
+                'Tecnología': ['tecnología', 'app', 'software', 'ia', 'inteligencia', 'digital'],
+                'Cultura': ['cultura', 'arte', 'cine', 'música', 'teatro', 'libro'],
+                'Salud': ['salud', 'médico', 'hospital', 'enfermedad', 'covid', 'vacuna'],
+                'Casinos': ['casino', 'juego', 'apuestas', 'entretenimiento'],
+            };
+
+            const lower = title.toLowerCase();
+            for (const [cat, words] of Object.entries(keywords)) {
+                if (words.some(w => lower.includes(w))) return cat;
+            }
+            return 'Otros';
+        }
+
+        function updateSourceChart(data) {
+            const ctx = document.getElementById('sourceChart').getContext('2d');
+            new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(byDiary),
+                    labels: Object.keys(data),
                     datasets: [{
-                        data: Object.values(byDiary),
-                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b', '#fa709a', '#fee140']
+                        data: Object.values(data),
+                        backgroundColor: ['#1e3c72', '#2a5298', '#3d7cc4', '#5a9fd4', '#7eb3e0']
                     }]
                 },
                 options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
             });
+        }
 
-            const byCat = {};
-            allNews.forEach(n => {
-                byCat[n.category] = (byCat[n.category] || 0) + 1;
-            });
-
-            if (charts.category) charts.category.destroy();
-            const ctx2 = document.getElementById('categoryChart').getContext('2d');
-            charts.category = new Chart(ctx2, {
+        function updateCategoryChart(data) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(byCat),
+                    labels: Object.keys(data),
                     datasets: [{
                         label: 'Noticias',
-                        data: Object.values(byCat),
-                        backgroundColor: '#667eea'
+                        data: Object.values(data),
+                        backgroundColor: '#2a5298'
                     }]
                 },
-                options: { responsive: true, indexAxis: 'y' }
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function updateTrendsChart() {
+            const dailyData = {};
+            allNews.forEach(news => {
+                const date = new Date(news.published).toISOString().split('T')[0];
+                dailyData[date] = (dailyData[date] || 0) + 1;
             });
 
-            const byDate = {};
-            allNews.forEach(n => {
-                byDate[n.date] = (byDate[n.date] || 0) + 1;
-            });
-
-            const sortedDates = Object.keys(byDate).sort();
-            if (charts.trends) charts.trends.destroy();
-            const ctx3 = document.getElementById('trendsChart').getContext('2d');
-            charts.trends = new Chart(ctx3, {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: sortedDates,
+                    labels: Object.keys(dailyData).sort(),
                     datasets: [{
-                        label: 'Noticias/día',
-                        data: sortedDates.map(d => byDate[d]),
-                        borderColor: '#667eea',
-                        tension: 0.3,
-                        fill: true,
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)'
+                        label: 'Noticias',
+                        data: Object.values(dailyData),
+                        borderColor: '#2a5298',
+                        backgroundColor: 'rgba(42, 82, 152, 0.1)',
+                        tension: 0.4
                     }]
                 },
-                options: { responsive: true }
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
             });
+        }
+
+        function updateLastUpdate() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent =
+                `Última actualización: ${now.toLocaleDateString('es-CL')} ${now.toLocaleTimeString('es-CL')}`;
         }
 
         function switchTab(tab) {
@@ -645,11 +832,11 @@
             document.getElementById(tab).classList.add('active');
         }
 
-        function exportPDF() {
+        function downloadPDF() {
             const element = document.getElementById('newsContainer');
             const opt = {
                 margin: 10,
-                filename: `newsletter-${new Date().toISOString().split('T')[0]}.pdf`,
+                filename: 'newsletter.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
                 jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
@@ -657,13 +844,59 @@
             html2pdf().set(opt).from(element).save();
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const today = new Date();
-            const week = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-            document.getElementById('dateTo').value = today.toISOString().split('T')[0];
-            document.getElementById('dateFrom').value = week.toISOString().split('T')[0];
-            loadNews();
+        async function manualRefresh() {
+            const btn = document.getElementById('refreshBtn');
+            btn.classList.add('loading');
+            document.getElementById('refreshIcon').textContent = '⏳';
+            document.getElementById('refreshText').textContent = 'Actualizando...';
+
+            try {
+                await new Promise(r => setTimeout(r, 1500));
+                await loadNews();
+                showNotification('Noticias actualizadas ✓', 'success');
+            } catch (error) {
+                showNotification('Error al actualizar', 'error');
+            }
+
+            btn.classList.remove('loading');
+            document.getElementById('refreshIcon').textContent = '🔄';
+            document.getElementById('refreshText').textContent = 'Actualizar';
+        }
+
+        function showNotification(msg, type = 'success') {
+            const n = document.createElement('div');
+            n.className = `notification ${type === 'error' ? 'error' : ''}`;
+            n.textContent = msg;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
+        }
+
+        function formatDate(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' });
+            } catch {
+                return 'Fecha desconocida';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeAttr(text) {
+            return text.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        }
+
+        document.getElementById('newsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'newsModal') closeModal();
         });
+
+        document.addEventListener('DOMContentLoaded', loadNews);
+        document.getElementById('dateFrom').valueAsDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        document.getElementById('dateTo').valueAsDate = new Date();
     </script>
 </body>
 </html>
