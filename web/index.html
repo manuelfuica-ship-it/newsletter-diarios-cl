@@ -27,12 +27,54 @@
             padding: 30px;
             margin-bottom: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .title {
+            flex: 1;
         }
 
         header h1 {
             color: #667eea;
             margin-bottom: 10px;
             font-size: 32px;
+        }
+
+        header .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .refresh-btn {
+            background: #27ae60;
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .refresh-btn:hover {
+            background: #229954;
+        }
+
+        .refresh-btn.loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .last-update {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
         }
 
         .tabs {
@@ -238,12 +280,6 @@
             margin-top: 8px;
         }
 
-        .empty {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
         .tab-content {
             display: none;
         }
@@ -253,24 +289,65 @@
         }
 
         .pdf-btn {
-            background: #27ae60;
+            background: #3498db;
         }
 
         .pdf-btn:hover {
-            background: #229954;
+            background: #2980b9;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.success {
+            border-left: 4px solid #27ae60;
+        }
+
+        .notification.loading {
+            border-left: 4px solid #3498db;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .filters { flex-direction: column; }
+            .pdf-btn { width: 100%; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📰 Newsletter Diarios</h1>
-            <p>Recopilador automático de noticias de medios chilenos</p>
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('news')">📰 Noticias</button>
-                <button class="tab" onclick="switchTab('stats')">📊 Estadísticas</button>
+            <div class="title">
+                <h1>📰 Newsletter Diarios</h1>
+                <p>Recopilador automático de noticias de medios chilenos</p>
+                <div class="last-update">Última actualización: <span id="lastUpdate">-</span></div>
+            </div>
+            <div class="actions">
+                <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">
+                    <span id="refreshIcon">🔄</span>
+                    <span id="refreshText">Actualizar</span>
+                </button>
             </div>
         </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('news')">📰 Noticias</button>
+            <button class="tab" onclick="switchTab('stats')">📊 Estadísticas</button>
+        </div>
 
         <!-- TAB NOTICIAS -->
         <div id="news" class="tab-content active">
@@ -376,21 +453,36 @@
             return text.length > max ? text.substring(0, max) + "..." : text;
         }
 
+        function showNotification(message, type = 'success') {
+            const notif = document.createElement('div');
+            notif.className = `notification ${type}`;
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
         async function loadNews() {
             try {
-                const response = await fetch('data/news.json');
+                const response = await fetch('data/news.json?t=' + Date.now());
                 if (response.ok) {
                     allNews = await response.json();
                     allNews.forEach(n => n.category = n.category || categorizeNews(n));
+                    updateLastUpdate();
                 } else {
                     loadSampleNews();
                 }
             } catch (e) {
-                console.log("Usando datos de ejemplo");
                 loadSampleNews();
             }
             renderNews();
             updateStats();
+        }
+
+        function updateLastUpdate() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('es-CL');
+            const date = now.toLocaleDateString('es-CL');
+            document.getElementById('lastUpdate').textContent = `${date} ${time}`;
         }
 
         function loadSampleNews() {
@@ -448,6 +540,28 @@
             renderNews(filtered);
         }
 
+        async function manualRefresh() {
+            const btn = document.getElementById('refreshBtn');
+            const icon = document.getElementById('refreshIcon');
+            const text = document.getElementById('refreshText');
+
+            btn.classList.add('loading');
+            icon.textContent = '⏳';
+            text.textContent = 'Actualizando...';
+
+            try {
+                await new Promise(r => setTimeout(r, 1000));
+                await loadNews();
+                showNotification('✅ Noticias actualizadas correctamente', 'success');
+            } catch (e) {
+                showNotification('❌ Error al actualizar', 'error');
+            } finally {
+                btn.classList.remove('loading');
+                icon.textContent = '🔄';
+                text.textContent = 'Actualizar';
+            }
+        }
+
         function updateStats() {
             const total = allNews.length;
             const diaries = new Set(allNews.map(n => n.source || n.diary)).size;
@@ -459,7 +573,6 @@
             document.getElementById('totalDays').textContent = days;
             document.getElementById('avgPerDay').textContent = avg;
 
-            // Gráfico por medio
             const byDiary = {};
             allNews.forEach(n => {
                 const d = n.source || n.diary;
@@ -480,7 +593,6 @@
                 options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
             });
 
-            // Gráfico por categoría
             const byCat = {};
             allNews.forEach(n => {
                 byCat[n.category] = (byCat[n.category] || 0) + 1;
@@ -501,7 +613,6 @@
                 options: { responsive: true, indexAxis: 'y' }
             });
 
-            // Gráfico de tendencias
             const byDate = {};
             allNews.forEach(n => {
                 byDate[n.date] = (byDate[n.date] || 0) + 1;
@@ -546,7 +657,6 @@
             html2pdf().set(opt).from(element).save();
         }
 
-        // Inicializar
         window.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
             const week = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
