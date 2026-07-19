@@ -626,7 +626,11 @@
     <script>
         let allNews = [];
         let selectedCategory = 'Todas';
-        let sourceCharts = {};
+        let charts = {
+            source: null,
+            category: null,
+            trends: null
+        };
 
         async function loadNews() {
             try {
@@ -815,8 +819,9 @@
         }
 
         function updateSourceChart(data) {
+            if (charts.source) charts.source.destroy();
             const ctx = document.getElementById('sourceChart').getContext('2d');
-            new Chart(ctx, {
+            charts.source = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(data),
@@ -830,8 +835,9 @@
         }
 
         function updateCategoryChart(data) {
+            if (charts.category) charts.category.destroy();
             const ctx = document.getElementById('categoryChart').getContext('2d');
-            new Chart(ctx, {
+            charts.category = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: Object.keys(data),
@@ -861,8 +867,9 @@
                 }
             });
 
+            if (charts.trends) charts.trends.destroy();
             const ctx = document.getElementById('trendsChart').getContext('2d');
-            new Chart(ctx, {
+            charts.trends = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: Object.keys(dailyData).sort(),
