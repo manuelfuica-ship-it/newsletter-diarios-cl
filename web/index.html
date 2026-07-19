@@ -678,19 +678,23 @@
                 return;
             }
 
-            container.innerHTML = filtered.map(news => `
-                <div class="news-card">
-                    <div class="news-card-content">
-                        <div class="news-source">${news.diary}</div>
-                        <h3 class="news-title">${escapeHtml(news.title)}</h3>
-                        <p class="news-description">${escapeHtml(news.description || 'Sin descripción')}</p>
-                        <div class="news-footer">
-                            <span class="news-date">${formatDate(news.published)}</span>
-                            <button class="news-link" onclick="openModal('${escapeAttr(news.title)}', '${escapeAttr(news.description || '')}', '${escapeAttr(news.diary)}', '${escapeAttr(news.published)}', '${escapeAttr(news.link)}')">Leer más</button>
+            container.innerHTML = filtered.map(news => {
+                // Encontrar el índice real en allNews para acceder a la descripción completa
+                const realIndex = allNews.findIndex(n => n.title === news.title && n.link === news.link);
+                return `
+                    <div class="news-card">
+                        <div class="news-card-content">
+                            <div class="news-source">${news.diary}</div>
+                            <h3 class="news-title">${escapeHtml(news.title)}</h3>
+                            <p class="news-description">${escapeHtml(news.description || 'Sin descripción')}</p>
+                            <div class="news-footer">
+                                <span class="news-date">${formatDate(news.published)}</span>
+                                <button class="news-link" onclick="openModalByIndex(${realIndex})">Leer más</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function selectDiary(diary) {
@@ -732,20 +736,48 @@
             renderNews();
         }
 
+        function openModalByIndex(index) {
+            if (index < 0 || index >= allNews.length) {
+                console.error('Índice de noticia inválido:', index);
+                return;
+            }
+
+            const article = allNews[index];
+            document.getElementById('modalTitle').textContent = article.title;
+            document.getElementById('modalSource').textContent = article.diary;
+            document.getElementById('modalLink').href = article.link;
+
+            // Mostrar contenido completo del artículo
+            const content = document.getElementById('modalContent');
+            if (article.description && article.description.trim()) {
+                // Formatear el contenido: convertir saltos de línea a párrafos
+                const formattedContent = article.description
+                    .split('\n\n')
+                    .filter(para => para.trim())
+                    .map(para => `<p>${escapeHtml(para.trim())}</p>`)
+                    .join('');
+                content.innerHTML = formattedContent || '<p style="color: #999; text-align: center; padding: 40px;">Contenido no disponible</p>';
+            } else {
+                content.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">Contenido no disponible</p>';
+            }
+
+            document.getElementById('newsModal').classList.add('active');
+        }
+
         function openModal(title, description, source, date, link) {
+            // Función legacy - mantenerla por compatibilidad
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalSource').textContent = source;
             document.getElementById('modalLink').href = link;
 
-            // Mostrar contenido completo del artículo
             const content = document.getElementById('modalContent');
             if (description) {
-                // Formatear el contenido: convertir saltos de línea a párrafos
                 const formattedContent = description
                     .split('\n\n')
-                    .map(para => `<p>${escapeHtml(para)}</p>`)
+                    .filter(para => para.trim())
+                    .map(para => `<p>${escapeHtml(para.trim())}</p>`)
                     .join('');
-                content.innerHTML = formattedContent;
+                content.innerHTML = formattedContent || '<p style="color: #999; text-align: center; padding: 40px;">Contenido no disponible</p>';
             } else {
                 content.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">Contenido no disponible</p>';
             }
