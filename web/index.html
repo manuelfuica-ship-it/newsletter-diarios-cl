@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Newsletter Diarios 📰</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,7 +17,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -34,9 +35,28 @@
             font-size: 32px;
         }
 
-        header p {
-            color: #999;
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
             font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
         }
 
         .filters {
@@ -70,10 +90,9 @@
             font-size: 14px;
         }
 
-        .filter-group input:focus, .filter-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        input[type="search"] {
+            flex: 1;
+            min-width: 250px;
         }
 
         button {
@@ -89,7 +108,52 @@
 
         button:hover {
             background: #5568d3;
-            transform: translateY(-2px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card .label {
+            color: #999;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .chart-container h3 {
+            margin-bottom: 20px;
+            color: #333;
         }
 
         .categories {
@@ -127,6 +191,8 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
         }
 
         .news-item {
@@ -135,11 +201,6 @@
             background: #f9f9f9;
             border-radius: 6px;
             transition: all 0.2s;
-        }
-
-        .news-item:hover {
-            background: #f0f0f0;
-            transform: translateX(5px);
         }
 
         .news-item h3 {
@@ -153,7 +214,6 @@
             color: #667eea;
             font-size: 12px;
             font-weight: 600;
-            margin-bottom: 8px;
             text-transform: uppercase;
         }
 
@@ -161,15 +221,12 @@
             color: #666;
             font-size: 13px;
             line-height: 1.5;
-            margin-bottom: 10px;
-            max-height: 120px;
-            overflow: hidden;
+            margin: 8px 0;
         }
 
         .news-item .date {
             color: #999;
             font-size: 12px;
-            margin-bottom: 10px;
         }
 
         .news-item a {
@@ -178,43 +235,29 @@
             text-decoration: none;
             font-size: 12px;
             font-weight: 600;
-            padding: 6px 12px;
-            background: white;
-            border-radius: 4px;
-            transition: all 0.2s;
+            margin-top: 8px;
         }
 
-        .news-item a:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .stats {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
+        .empty {
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 40px;
+            color: #999;
         }
 
-        .stats p {
-            color: #666;
-            font-size: 14px;
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .pdf-btn {
             background: #27ae60;
-            margin-left: auto;
         }
 
         .pdf-btn:hover {
             background: #229954;
-        }
-
-        @media (max-width: 768px) {
-            .filters { flex-direction: column; }
-            .pdf-btn { margin-left: 0; }
         }
     </style>
 </head>
@@ -222,101 +265,162 @@
     <div class="container">
         <header>
             <h1>📰 Newsletter Diarios</h1>
-            <p>Noticias de El Mercurio, La Tercera, La Segunda y DF</p>
+            <p>Recopilador automático de noticias de medios chilenos</p>
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('news')">📰 Noticias</button>
+                <button class="tab" onclick="switchTab('stats')">📊 Estadísticas</button>
+            </div>
         </header>
 
-        <div class="filters">
-            <div class="filter-group">
-                <label>Desde:</label>
-                <input type="date" id="dateFrom">
+        <!-- TAB NOTICIAS -->
+        <div id="news" class="tab-content active">
+            <div class="filters">
+                <div class="filter-group">
+                    <input type="search" id="searchInput" placeholder="Buscar noticias..." onkeyup="filterNews()">
+                </div>
+                <div class="filter-group">
+                    <label>Desde:</label>
+                    <input type="date" id="dateFrom" onchange="filterNews()">
+                </div>
+                <div class="filter-group">
+                    <label>Hasta:</label>
+                    <input type="date" id="dateTo" onchange="filterNews()">
+                </div>
+                <div class="filter-group">
+                    <label>Categoría:</label>
+                    <select id="categoryFilter" onchange="filterNews()">
+                        <option value="">Todas</option>
+                        <option value="💼 Economía">💼 Economía</option>
+                        <option value="🏛️ Política">🏛️ Política</option>
+                        <option value="⚽ Deportes">⚽ Deportes</option>
+                        <option value="🌍 Internacional">🌍 Internacional</option>
+                        <option value="💻 Tecnología">💻 Tecnología</option>
+                        <option value="🎨 Cultura">🎨 Cultura</option>
+                        <option value="🏥 Salud">🏥 Salud</option>
+                        <option value="🎰 Casinos">🎰 Casinos de Juego + Online</option>
+                    </select>
+                </div>
+                <button class="pdf-btn" onclick="exportPDF()">📄 PDF</button>
             </div>
-            <div class="filter-group">
-                <label>Hasta:</label>
-                <input type="date" id="dateTo">
+
+            <div class="stats">
+                <p><span id="newsCount">0</span> noticias • <span id="diaryCount">0</span> medios</p>
             </div>
-            <div class="filter-group">
-                <label>Categoría:</label>
-                <select id="categoryFilter">
-                    <option value="">Todas</option>
-                    <option value="💼 Economía">💼 Economía</option>
-                    <option value="🏛️ Política">🏛️ Política</option>
-                    <option value="⚽ Deportes">⚽ Deportes</option>
-                    <option value="🌍 Internacional">🌍 Internacional</option>
-                    <option value="💻 Tecnología">💻 Tecnología</option>
-                    <option value="🎨 Cultura">🎨 Cultura</option>
-                    <option value="🏥 Salud">🏥 Salud</option>
-                    <option value="🎰 Casinos">🎰 Casinos de Juego + Online</option>
-                </select>
-            </div>
-            <button onclick="filterNews()">Filtrar</button>
-            <button class="pdf-btn" onclick="exportPDF()">📄 Descargar PDF</button>
+
+            <div class="categories" id="newsContainer"></div>
         </div>
 
-        <div class="stats" id="stats"></div>
-        <div class="categories" id="newsContainer"></div>
+        <!-- TAB ESTADÍSTICAS -->
+        <div id="stats" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="totalNews">0</div>
+                    <div class="label">Total de Noticias</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="totalDiaries">0</div>
+                    <div class="label">Medios</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="totalDays">0</div>
+                    <div class="label">Días de Datos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="avgPerDay">0</div>
+                    <div class="label">Promedio/Día</div>
+                </div>
+            </div>
+
+            <div class="charts">
+                <div class="chart-container">
+                    <h3>Noticias por Medio</h3>
+                    <canvas id="diaryChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Noticias por Categoría</h3>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Noticias últimos 7 días</h3>
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const sampleNews = [
-            { title: "Chile lidera inversión en IA en Latinoamérica", source: "El Mercurio", summary: "El país se posiciona como referente regional en tecnología de inteligencia artificial con inversiones por más de USD 500 millones en los últimos dos años.", link: "https://elmercurio.com", date: "2026-07-18", category: "💻 Tecnología" },
-            { title: "Banco Central mantiene tasa de interés en 5.25%", source: "DF", summary: "La autoridad monetaria decidió mantener sin cambios la Tasa de Política Monetaria en su última reunión, considerando la evolución de la inflación y el crecimiento económico.", link: "https://df.cl", date: "2026-07-18", category: "💼 Economía" },
-            { title: "Colo-Colo avanza en Copa Libertadores", source: "La Tercera", summary: "El equipo albaiceleste derrotó 2-1 a rival paraguayo y se clasifica a la siguiente ronda de la máxima competición sudamericana de clubes profesionales.", link: "https://latercera.com", date: "2026-07-18", category: "⚽ Deportes" },
-            { title: "Gobierno anuncia reforma tributaria para 2027", source: "La Segunda", summary: "El Ejecutivo presentó su propuesta de reforma tributaria que busca aumentar recaudación en USD 2 mil millones anuales para financiar programas sociales y educativos.", link: "https://lasegunda.com", date: "2026-07-17", category: "🏛️ Política" },
-            { title: "Plataforma online de casino registra crecimiento", source: "El Mercurio", summary: "Operadores de juego en línea reportan aumento de 45% en usuarios activos durante el último trimestre, con especial énfasis en juegos de azar y apuestas deportivas.", link: "https://elmercurio.com", date: "2026-07-18", category: "🎰 Casinos" },
-            { title: "Trump retira apoyo a acuerdos climáticos", source: "El Mercurio", summary: "El expresidente estadounidense anuncia su intención de retirarse de los acuerdos internacionales de cambio climático si vuelve a ganar las elecciones presidenciales.", link: "https://elmercurio.com", date: "2026-07-17", category: "🌍 Internacional" },
-            { title: "Nuevo tratamiento para cáncer avanza en ensayos", source: "DF", summary: "Investigadores chilenos participan en estudio que demuestra efectividad de nueva terapia génica para tratar cáncer de pulmón avanzado con resultados prometedores.", link: "https://df.cl", date: "2026-07-17", category: "🏥 Salud" },
-            { title: "Festival de cine abre convocatoria de películas", source: "La Tercera", summary: "Abre la convocatoria para cortometrajes y documentales nacionales que participarán en la próxima edición del festival de cine más importante de Latinoamérica.", link: "https://latercera.com", date: "2026-07-16", category: "🎨 Cultura" },
-        ];
+        let allNews = [];
+        let charts = {};
 
         const categoryKeywords = {
-            "💼 Economía": ["economía", "banco", "dólar", "bolsa", "empresa", "negocios", "inversión"],
-            "🏛️ Política": ["gobierno", "diputado", "senado", "congreso", "elección", "ministro"],
-            "⚽ Deportes": ["fútbol", "deportes", "equipo", "jugador", "liga"],
+            "💼 Economía": ["economía", "banco", "dólar", "bolsa", "empresa"],
+            "🏛️ Política": ["gobierno", "diputado", "congreso", "ministro"],
+            "⚽ Deportes": ["fútbol", "deportes", "equipo", "jugador"],
             "🌍 Internacional": ["mundo", "país", "trump", "internacional"],
-            "💻 Tecnología": ["tecnología", "app", "software", "ia", "inteligencia artificial"],
-            "🎨 Cultura": ["arte", "música", "película", "cultura", "cine"],
-            "🏥 Salud": ["salud", "médico", "covid", "virus", "enfermedad"],
-            "🎰 Casinos": ["casino", "juego", "apuestas", "poker", "online", "gaming"]
+            "💻 Tecnología": ["tecnología", "app", "ia", "inteligencia artificial"],
+            "🎨 Cultura": ["arte", "música", "película", "cine"],
+            "🏥 Salud": ["salud", "médico", "covid", "virus"],
+            "🎰 Casinos": ["casino", "juego", "apuestas", "online"]
         };
 
         function categorizeNews(news) {
-            const text = (news.title + " " + news.summary).toLowerCase();
-            for (const [category, keywords] of Object.entries(categoryKeywords)) {
-                if (keywords.some(keyword => text.includes(keyword))) {
-                    return category;
-                }
+            const text = (news.title + " " + (news.description || "")).toLowerCase();
+            for (const [cat, keywords] of Object.entries(categoryKeywords)) {
+                if (keywords.some(k => text.includes(k))) return cat;
             }
             return "📚 Otros";
         }
 
-        function truncateSummary(text, maxChars = 200) {
-            if (text.length <= maxChars) return text;
-            return text.substring(0, maxChars) + "...";
+        function truncateSummary(text, max = 200) {
+            if (!text) return "";
+            return text.length > max ? text.substring(0, max) + "..." : text;
         }
 
-        function renderNews(newsData = sampleNews) {
+        async function loadNews() {
+            try {
+                const response = await fetch('data/news.json');
+                if (response.ok) {
+                    allNews = await response.json();
+                    allNews.forEach(n => n.category = n.category || categorizeNews(n));
+                } else {
+                    loadSampleNews();
+                }
+            } catch (e) {
+                console.log("Usando datos de ejemplo");
+                loadSampleNews();
+            }
+            renderNews();
+            updateStats();
+        }
+
+        function loadSampleNews() {
+            allNews = [
+                { title: "Chile lidera en tecnología", source: "El Mercurio", description: "Inversiones en IA crecen...", link: "#", date: new Date().toISOString().split('T')[0], category: "💻 Tecnología", diary: "El Mercurio" },
+                { title: "Banco Central mantiene tasa", source: "DF", description: "Política monetaria sin cambios...", link: "#", date: new Date().toISOString().split('T')[0], category: "💼 Economía", diary: "DF" },
+                { title: "Colo-Colo en Libertadores", source: "La Tercera", description: "Equipo avanza en competición...", link: "#", date: new Date().toISOString().split('T')[0], category: "⚽ Deportes", diary: "La Tercera" },
+            ];
+        }
+
+        function renderNews(newsData = allNews) {
             const container = document.getElementById('newsContainer');
             const grouped = {};
 
             newsData.forEach(news => {
-                const category = news.category || categorizeNews(news);
-                if (!grouped[category]) grouped[category] = [];
-                grouped[category].push({ ...news, category });
+                const cat = news.category;
+                if (!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(news);
             });
 
-            container.innerHTML = Object.entries(grouped).map(([category, items]) => `
+            container.innerHTML = Object.entries(grouped).map(([cat, items]) => `
                 <div class="category-section">
-                    <div class="category-header">
-                        ${category}
-                        <span class="count">${items.length}</span>
-                    </div>
+                    <div class="category-header">${cat} <span class="count">${items.length}</span></div>
                     <div class="news-items">
                         ${items.map(item => `
                             <div class="news-item">
-                                <div class="source">${item.source}</div>
+                                <div class="source">${item.source || item.diary}</div>
                                 <h3>${item.title}</h3>
                                 <div class="date">${new Date(item.date).toLocaleDateString('es-CL')}</div>
-                                <div class="summary">${truncateSummary(item.summary, 200)}</div>
+                                <div class="summary">${truncateSummary(item.description)}</div>
                                 <a href="${item.link}" target="_blank">Leer más →</a>
                             </div>
                         `).join('')}
@@ -324,22 +428,110 @@
                 </div>
             `).join('');
 
-            document.getElementById('stats').innerHTML = `
-                <p><strong>${newsData.length} noticias</strong> de <strong>${new Set(newsData.map(n => n.source)).size} medios</strong></p>
-            `;
+            document.getElementById('newsCount').textContent = newsData.length;
+            document.getElementById('diaryCount').textContent = new Set(newsData.map(n => n.source || n.diary)).size;
         }
 
         function filterNews() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
             const dateFrom = document.getElementById('dateFrom').value;
             const dateTo = document.getElementById('dateTo').value;
-            const categoryFilter = document.getElementById('categoryFilter').value;
+            const category = document.getElementById('categoryFilter').value;
 
-            let filtered = sampleNews;
-            if (dateFrom) filtered = filtered.filter(n => n.date >= dateFrom);
-            if (dateTo) filtered = filtered.filter(n => n.date <= dateTo);
-            if (categoryFilter) filtered = filtered.filter(n => (n.category || categorizeNews(n)) === categoryFilter);
+            let filtered = allNews.filter(n => {
+                const matchSearch = !search || n.title.toLowerCase().includes(search) || (n.description || "").toLowerCase().includes(search);
+                const matchDate = (!dateFrom || n.date >= dateFrom) && (!dateTo || n.date <= dateTo);
+                const matchCategory = !category || n.category === category;
+                return matchSearch && matchDate && matchCategory;
+            });
 
-            renderNews(filtered.length > 0 ? filtered : []);
+            renderNews(filtered);
+        }
+
+        function updateStats() {
+            const total = allNews.length;
+            const diaries = new Set(allNews.map(n => n.source || n.diary)).size;
+            const days = new Set(allNews.map(n => n.date)).size;
+            const avg = days > 0 ? Math.round(total / days) : 0;
+
+            document.getElementById('totalNews').textContent = total;
+            document.getElementById('totalDiaries').textContent = diaries;
+            document.getElementById('totalDays').textContent = days;
+            document.getElementById('avgPerDay').textContent = avg;
+
+            // Gráfico por medio
+            const byDiary = {};
+            allNews.forEach(n => {
+                const d = n.source || n.diary;
+                byDiary[d] = (byDiary[d] || 0) + 1;
+            });
+
+            if (charts.diary) charts.diary.destroy();
+            const ctx1 = document.getElementById('diaryChart').getContext('2d');
+            charts.diary = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(byDiary),
+                    datasets: [{
+                        data: Object.values(byDiary),
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b', '#fa709a', '#fee140']
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Gráfico por categoría
+            const byCat = {};
+            allNews.forEach(n => {
+                byCat[n.category] = (byCat[n.category] || 0) + 1;
+            });
+
+            if (charts.category) charts.category.destroy();
+            const ctx2 = document.getElementById('categoryChart').getContext('2d');
+            charts.category = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(byCat),
+                    datasets: [{
+                        label: 'Noticias',
+                        data: Object.values(byCat),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: { responsive: true, indexAxis: 'y' }
+            });
+
+            // Gráfico de tendencias
+            const byDate = {};
+            allNews.forEach(n => {
+                byDate[n.date] = (byDate[n.date] || 0) + 1;
+            });
+
+            const sortedDates = Object.keys(byDate).sort();
+            if (charts.trends) charts.trends.destroy();
+            const ctx3 = document.getElementById('trendsChart').getContext('2d');
+            charts.trends = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: sortedDates,
+                    datasets: [{
+                        label: 'Noticias/día',
+                        data: sortedDates.map(d => byDate[d]),
+                        borderColor: '#667eea',
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)'
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tab).classList.add('active');
         }
 
         function exportPDF() {
@@ -354,12 +546,13 @@
             html2pdf().set(opt).from(element).save();
         }
 
+        // Inicializar
         window.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
             const week = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
             document.getElementById('dateTo').value = today.toISOString().split('T')[0];
             document.getElementById('dateFrom').value = week.toISOString().split('T')[0];
-            renderNews();
+            loadNews();
         });
     </script>
 </body>

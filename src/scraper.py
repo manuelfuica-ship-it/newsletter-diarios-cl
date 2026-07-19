@@ -24,6 +24,8 @@ class NewsletterScraper:
         self.scrape_tercera()
         self.scrape_segunda()
         self.scrape_df()
+        self.scrape_biobiochile()
+        self.scrape_cnnchile()
         logger.info(f"Total: {len(self.news_items)} noticias")
         return {
             'date': datetime.now().strftime('%Y-%m-%d'),
@@ -115,22 +117,73 @@ class NewsletterScraper:
         except Exception as e:
             logger.error(f"DF: {e}")
 
+    def scrape_biobiochile(self):
+        try:
+            logger.info("BioBioChile...")
+            feed = feedparser.parse("https://www.biobiochile.cl/rss/")
+            for entry in feed.entries[:8]:
+                self.news_items.append({
+                    'diary': 'BioBioChile',
+                    'title': entry.get('title', 'Sin título'),
+                    'description': entry.get('summary', ''),
+                    'link': entry.get('link', ''),
+                    'published': entry.get('published', ''),
+                    'timestamp': datetime.now().isoformat()
+                })
+            logger.info(f"BioBioChile: {len(feed.entries[:8])} noticias")
+        except Exception as e:
+            logger.error(f"BioBioChile: {e}")
+
+    def scrape_cnnchile(self):
+        try:
+            logger.info("CNN Chile...")
+            feed = feedparser.parse("https://www.cnnchile.com/feed/rss/")
+            for entry in feed.entries[:8]:
+                self.news_items.append({
+                    'diary': 'CNN Chile',
+                    'title': entry.get('title', 'Sin título'),
+                    'description': entry.get('summary', ''),
+                    'link': entry.get('link', ''),
+                    'published': entry.get('published', ''),
+                    'timestamp': datetime.now().isoformat()
+                })
+            logger.info(f"CNN Chile: {len(feed.entries[:8])} noticias")
+        except Exception as e:
+            logger.error(f"CNN Chile: {e}")
+
+def save_news_to_json(newsletter, output_file='web/data/news.json'):
+    try:
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        existing_data = []
+        if os.path.exists(output_file):
+            with open(output_file, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+        new_data = existing_data + newsletter['raw_items']
+        new_data = new_data[-500:]
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(new_data, f, ensure_ascii=False, indent=2)
+        logger.info(f"Noticias guardadas: {len(new_data)} total")
+        return True
+    except Exception as e:
+        logger.error(f"Error guardando noticias: {e}")
+        return False
+
 def main():
     credentials_json = os.getenv('CREDENTIALS_JSON', '')
-    
     if not credentials_json:
         logger.error("CREDENTIALS_JSON no configurado")
         return False
 
     try:
         credentials = json.loads(credentials_json)
-        logger.info(f"Credenciales cargadas: {len(credentials)} diarios")
+        logger.info(f"Credenciales: {len(credentials)} diarios")
     except Exception as e:
-        logger.error(f"Error parsando credenciales: {e}")
+        logger.error(f"Error: {e}")
         return False
 
     scraper = NewsletterScraper(credentials)
     newsletter = scraper.scrape_all()
+    save_news_to_json(newsletter)
 
     try:
         send_to_slack(newsletter)
