@@ -1,20 +1,5 @@
-name: Newsletter Diarios
-on:
-  schedule:
-    - cron: '0 8 * * 1-5'
-  workflow_dispatch:
-jobs:
-  newsletter:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - run: pip install -r requirements.txt
       - name: Ejecutar scraper
         env:
-          CREDENTIALS_ENCRYPTED: ${{ secrets.CREDENTIALS_ENCRYPTED }}
-          ENCRYPTION_PASSWORD: ${{ secrets.ENCRYPTION_PASSWORD }}
+          CREDENTIALS_JSON: ${{ secrets.CREDENTIALS_JSON }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: python3 src/scraper.py
