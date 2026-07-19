@@ -53,22 +53,32 @@ class NewsletterScraper:
     def extract_summary(self, url, max_chars=1500):
         """Extrae un resumen más largo de un artículo (primeros párrafos)"""
         try:
-            response = self.session.get(url, timeout=10)
+            response = self.session.get(url, timeout=15)
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            # Buscar contenedor principal
-            article = soup.find(['article', 'main']) or soup.find('div', class_=lambda x: x and 'content' in str(x).lower())
+            # Remover scripts y styles
+            for script in soup(["script", "style"]):
+                script.decompose()
+
+            # Estrategia 1: Buscar article/main
+            article = soup.find(['article', 'main'])
             if not article:
+                # Estrategia 2: Buscar div con content/body
+                article = soup.find('div', class_=lambda x: x and any(kw in str(x).lower() for kw in ['content', 'body', 'article', 'post']))
+            if not article:
+                # Estrategia 3: Usar body completo
                 article = soup.body
 
             if article:
-                paragraphs = article.find_all('p')
+                # Extraer TODOS los párrafos sin limite mínimo
+                paragraphs = article.find_all('p', limit=15)
                 summary_parts = []
                 total_chars = 0
 
                 for p in paragraphs:
                     text = p.get_text().strip()
-                    if text and len(text) > 20:
+                    # Aceptar párrafos de cualquier tamaño (menos de 10 chars probablemente sean basura)
+                    if text and len(text) > 10:
                         if total_chars + len(text) < max_chars:
                             summary_parts.append(text)
                             total_chars += len(text) + 2
@@ -77,10 +87,18 @@ class NewsletterScraper:
 
                 if summary_parts:
                     summary = '\n\n'.join(summary_parts)
-                    if len(summary) > 300:
+                    if len(summary) > 200:  # Reducir threshold
                         return summary
-        except:
-            pass
+
+                # Si no hay párrafos, intentar extraer divs con texto
+                if not summary_parts:
+                    divs = article.find_all(['div', 'section'], limit=10)
+                    for div in divs:
+                        text = div.get_text().strip()
+                        if text and len(text) > 100:
+                            return text[:max_chars]
+        except Exception as e:
+            logger.debug(f"Error extrayendo resumen de {url}: {e}")
         return None
 
     def _login_mercurio(self):
@@ -138,7 +156,11 @@ class NewsletterScraper:
                         if len(title) > 5:
                             # Extraer resumen más largo
                             full_link = link if link.startswith('http') else f"https://www.elmercurio.com{link}"
-                            description = self.extract_summary(full_link) or title
+                            description = self.extract_summary(full_link)
+
+                            # Fallback: si no hay descripción, crear una por defecto
+                            if not description or len(description) < 100:
+                                description = f"{title}\n\n[Haz clic en 'Leer más' para ver el artículo completo en El Mercurio]"
 
                             self.news_items.append({
                                 'diary': 'El Mercurio',
@@ -252,7 +274,11 @@ class NewsletterScraper:
                         if len(title) > 5:
                             # Extraer resumen más largo
                             full_link = link if link.startswith('http') else f"https://www.lasegunda.com{link}"
-                            description = self.extract_summary(full_link) or title
+                            description = self.extract_summary(full_link)
+
+                            # Fallback: si no hay descripción, crear una por defecto
+                            if not description or len(description) < 100:
+                                description = f"{title}\n\n[Haz clic en 'Leer más' para ver el artículo completo en La Segunda]"
 
                             self.news_items.append({
                                 'diary': 'La Segunda',
@@ -325,7 +351,11 @@ class NewsletterScraper:
                         if len(title) > 5:
                             # Extraer resumen más largo
                             full_link = link if link.startswith('http') else f"https://www.df.cl{link}"
-                            description = self.extract_summary(full_link) or title
+                            description = self.extract_summary(full_link)
+
+                            # Fallback: si no hay descripción, crear una por defecto
+                            if not description or len(description) < 100:
+                                description = f"{title}\n\n[Haz clic en 'Leer más' para ver el artículo completo en DF]"
 
                             self.news_items.append({
                                 'diary': 'DF',
