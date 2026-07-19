@@ -47,14 +47,14 @@ class NewsletterScraper:
     def _login_mercurio(self):
         """Intenta hacer login en El Mercurio"""
         try:
-            creds = self.credentials.get('El Mercurio', {})
+            creds = self.credentials.get('mercurio', {})
             if not creds:
                 return False
 
             logger.info("Intentando autenticación en El Mercurio...")
             login_url = "https://www.elmercurio.com/login"
             payload = {
-                'email': creds.get('user', ''),
+                'email': creds.get('username', ''),
                 'password': creds.get('password', '')
             }
             response = self.session.post(login_url, data=payload, timeout=10)
@@ -85,14 +85,14 @@ class NewsletterScraper:
     def _login_tercera(self):
         """Intenta hacer login en La Tercera"""
         try:
-            creds = self.credentials.get('La Tercera', {})
+            creds = self.credentials.get('tercera', {})
             if not creds:
                 return False
 
             logger.info("Intentando autenticación en La Tercera...")
             login_url = "https://www.latercera.com/auth/login"
             payload = {
-                'email': creds.get('user', ''),
+                'email': creds.get('username', ''),
                 'password': creds.get('password', '')
             }
             response = self.session.post(login_url, data=payload, timeout=10)
@@ -123,14 +123,14 @@ class NewsletterScraper:
     def _login_segunda(self):
         """Intenta hacer login en La Segunda"""
         try:
-            creds = self.credentials.get('La Segunda', {})
+            creds = self.credentials.get('segunda', {})
             if not creds:
                 return False
 
             logger.info("Intentando autenticación en La Segunda...")
             login_url = "https://www.lasegunda.com/login"
             payload = {
-                'email': creds.get('user', ''),
+                'email': creds.get('username', ''),
                 'password': creds.get('password', '')
             }
             response = self.session.post(login_url, data=payload, timeout=10)
@@ -166,14 +166,14 @@ class NewsletterScraper:
     def _login_df(self):
         """Intenta hacer login en DF"""
         try:
-            creds = self.credentials.get('DF', {})
+            creds = self.credentials.get('df', {})
             if not creds:
                 return False
 
             logger.info("Intentando autenticación en DF...")
             login_url = "https://www.df.cl/login"
             payload = {
-                'email': creds.get('user', ''),
+                'email': creds.get('username', ''),
                 'password': creds.get('password', '')
             }
             response = self.session.post(login_url, data=payload, timeout=10)
