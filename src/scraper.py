@@ -68,17 +68,30 @@ class NewsletterScraper:
             logger.info("El Mercurio...")
             self._login_mercurio()
 
-            feed = feedparser.parse("https://www.elmercurio.com/rss")
-            for entry in feed.entries[:10]:
-                self.news_items.append({
-                    'diary': 'El Mercurio',
-                    'title': entry.get('title', 'Sin título'),
-                    'description': entry.get('summary', ''),
-                    'link': entry.get('link', ''),
-                    'published': entry.get('published', ''),
-                    'timestamp': datetime.now().isoformat()
-                })
-            logger.info(f"El Mercurio: {len(feed.entries[:10])} noticias")
+            response = self.session.get("https://www.elmercurio.com", timeout=15)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=25)
+
+            for article in articles:
+                try:
+                    title_elem = article.find(['h1', 'h2', 'h3', 'a'])
+                    link_elem = article.find('a', href=True)
+
+                    if title_elem and link_elem:
+                        title = title_elem.get_text().strip()
+                        if len(title) > 5:
+                            self.news_items.append({
+                                'diary': 'El Mercurio',
+                                'title': title,
+                                'description': '',
+                                'link': link_elem.get('href', ''),
+                                'published': '',
+                                'timestamp': datetime.now().isoformat()
+                            })
+                except:
+                    pass
+
+            logger.info(f"El Mercurio: {len([x for x in self.news_items if x['diary'] == 'El Mercurio'])} noticias")
         except Exception as e:
             logger.error(f"El Mercurio: {e}")
 
@@ -107,7 +120,7 @@ class NewsletterScraper:
             self._login_tercera()
 
             feed = feedparser.parse("https://www.latercera.com/rss")
-            for entry in feed.entries[:10]:
+            for entry in feed.entries[:30]:
                 self.news_items.append({
                     'diary': 'La Tercera',
                     'title': entry.get('title', 'Sin título'),
@@ -116,7 +129,7 @@ class NewsletterScraper:
                     'published': entry.get('published', ''),
                     'timestamp': datetime.now().isoformat()
                 })
-            logger.info(f"La Tercera: {len(feed.entries[:10])} noticias")
+            logger.info(f"La Tercera: {len(feed.entries[:30])} noticias")
         except Exception as e:
             logger.error(f"La Tercera: {e}")
 
@@ -144,17 +157,30 @@ class NewsletterScraper:
             logger.info("La Segunda...")
             self._login_segunda()
 
-            feed = feedparser.parse("https://www.lasegunda.com/feed/rss")
-            for entry in feed.entries[:10]:
-                self.news_items.append({
-                    'diary': 'La Segunda',
-                    'title': entry.get('title', 'Sin título'),
-                    'description': entry.get('summary', ''),
-                    'link': entry.get('link', ''),
-                    'published': entry.get('published', ''),
-                    'timestamp': datetime.now().isoformat()
-                })
-            logger.info(f"La Segunda: {len(feed.entries[:10])} noticias")
+            response = self.session.get("https://www.lasegunda.com", timeout=15)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=25)
+
+            for article in articles:
+                try:
+                    title_elem = article.find(['h1', 'h2', 'h3', 'a'])
+                    link_elem = article.find('a', href=True)
+
+                    if title_elem and link_elem:
+                        title = title_elem.get_text().strip()
+                        if len(title) > 5:
+                            self.news_items.append({
+                                'diary': 'La Segunda',
+                                'title': title,
+                                'description': '',
+                                'link': link_elem.get('href', ''),
+                                'published': '',
+                                'timestamp': datetime.now().isoformat()
+                            })
+                except:
+                    pass
+
+            logger.info(f"La Segunda: {len([x for x in self.news_items if x['diary'] == 'La Segunda'])} noticias")
         except Exception as e:
             logger.error(f"La Segunda: {e}")
 
@@ -182,17 +208,30 @@ class NewsletterScraper:
             logger.info("DF...")
             self._login_df()
 
-            feed = feedparser.parse("https://www.df.cl/rss")
-            for entry in feed.entries[:10]:
-                self.news_items.append({
-                    'diary': 'DF',
-                    'title': entry.get('title', 'Sin título'),
-                    'description': entry.get('summary', ''),
-                    'link': entry.get('link', ''),
-                    'published': entry.get('published', ''),
-                    'timestamp': datetime.now().isoformat()
-                })
-            logger.info(f"DF: {len(feed.entries[:10])} noticias")
+            response = self.session.get("https://www.df.cl", timeout=15)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=25)
+
+            for article in articles:
+                try:
+                    title_elem = article.find(['h1', 'h2', 'h3', 'a'])
+                    link_elem = article.find('a', href=True)
+
+                    if title_elem and link_elem:
+                        title = title_elem.get_text().strip()
+                        if len(title) > 5:
+                            self.news_items.append({
+                                'diary': 'DF',
+                                'title': title,
+                                'description': '',
+                                'link': link_elem.get('href', ''),
+                                'published': '',
+                                'timestamp': datetime.now().isoformat()
+                            })
+                except:
+                    pass
+
+            logger.info(f"DF: {len([x for x in self.news_items if x['diary'] == 'DF'])} noticias")
         except Exception as e:
             logger.error(f"DF: {e}")
 
