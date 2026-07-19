@@ -152,6 +152,161 @@ class SeleniumScraper:
             if self.driver:
                 self.driver.quit()
 
+    def login_mercurio(self, username, password):
+        """Hacer login en El Mercurio"""
+        try:
+            logger.info("Intentando login en El Mercurio...")
+            self.driver.get("https://www.elmercurio.com")
+            wait = WebDriverWait(self.driver, 10)
+
+            # Buscar formulario de login
+            login_buttons = self.driver.find_elements(By.XPATH, "//a[contains(@href, 'login')] | //button[contains(text(), 'Ingresar')]")
+            if login_buttons:
+                login_buttons[0].click()
+
+            wait.until(EC.presence_of_element_located((By.NAME, "email")))
+            self.driver.find_element(By.NAME, "email").send_keys(username)
+            self.driver.find_element(By.NAME, "password").send_keys(password)
+
+            login_btn = self.driver.find_element(By.XPATH, "//button[contains(text(), 'Ingresar')]")
+            login_btn.click()
+
+            wait.until(EC.url_changes(self.driver.current_url))
+            logger.info("Login en El Mercurio exitoso")
+            return True
+        except Exception as e:
+            logger.debug(f"Login El Mercurio fallido: {e}")
+            return False
+
+    def scrape_mercurio_with_selenium(self, username, password):
+        """Scraping de El Mercurio usando Selenium"""
+        try:
+            if not self.init_driver(headless=True):
+                logger.error("No se pudo inicializar ChromeDriver")
+                return []
+
+            if not self.login_mercurio(username, password):
+                logger.warning("No se pudo hacer login en El Mercurio")
+                return []
+
+            self.driver.get("https://www.elmercurio.com")
+            wait = WebDriverWait(self.driver, 10)
+            wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "article")))
+
+            soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+            articles = soup.find_all('article', limit=20)
+
+            news_items = []
+            for article in articles:
+                try:
+                    title_elem = article.find(['h2', 'h3', 'a'])
+                    link_elem = article.find('a', href=True)
+
+                    if title_elem and link_elem:
+                        title = title_elem.get_text().strip()
+                        link = link_elem.get('href', '')
+
+                        if len(title) > 5 and link:
+                            full_link = link if link.startswith('http') else f"https://www.elmercurio.com{link}"
+                            content = self.scrape_article_content(full_link)
+
+                            news_items.append({
+                                'diary': 'El Mercurio',
+                                'title': title,
+                                'description': content,
+                                'link': full_link,
+                                'published': '',
+                                'timestamp': datetime.now().isoformat()
+                            })
+                except:
+                    pass
+
+            logger.info(f"El Mercurio (Selenium): {len(news_items)} noticias")
+            return news_items
+        except Exception as e:
+            logger.error(f"Error en scraping El Mercurio: {e}")
+            return []
+        finally:
+            if self.driver:
+                self.driver.quit()
+
+    def login_df(self, username, password):
+        """Hacer login en DF"""
+        try:
+            logger.info("Intentando login en DF...")
+            self.driver.get("https://www.df.cl")
+            wait = WebDriverWait(self.driver, 10)
+
+            login_buttons = self.driver.find_elements(By.XPATH, "//a[contains(@href, 'login')] | //button[contains(text(), 'Ingresar')]")
+            if login_buttons:
+                login_buttons[0].click()
+
+            wait.until(EC.presence_of_element_located((By.NAME, "email")))
+            self.driver.find_element(By.NAME, "email").send_keys(username)
+            self.driver.find_element(By.NAME, "password").send_keys(password)
+
+            login_btn = self.driver.find_element(By.XPATH, "//button[contains(text(), 'Ingresar')]")
+            login_btn.click()
+
+            wait.until(EC.url_changes(self.driver.current_url))
+            logger.info("Login en DF exitoso")
+            return True
+        except Exception as e:
+            logger.debug(f"Login DF fallido: {e}")
+            return False
+
+    def scrape_df_with_selenium(self, username, password):
+        """Scraping de DF usando Selenium"""
+        try:
+            if not self.init_driver(headless=True):
+                logger.error("No se pudo inicializar ChromeDriver")
+                return []
+
+            if not self.login_df(username, password):
+                logger.warning("No se pudo hacer login en DF")
+                return []
+
+            self.driver.get("https://www.df.cl")
+            wait = WebDriverWait(self.driver, 10)
+            wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "article")))
+
+            soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+            articles = soup.find_all('article', limit=20)
+
+            news_items = []
+            for article in articles:
+                try:
+                    title_elem = article.find(['h2', 'h3', 'a'])
+                    link_elem = article.find('a', href=True)
+
+                    if title_elem and link_elem:
+                        title = title_elem.get_text().strip()
+                        link = link_elem.get('href', '')
+
+                        if len(title) > 5 and link:
+                            full_link = link if link.startswith('http') else f"https://www.df.cl{link}"
+                            content = self.scrape_article_content(full_link)
+
+                            news_items.append({
+                                'diary': 'DF',
+                                'title': title,
+                                'description': content,
+                                'link': full_link,
+                                'published': '',
+                                'timestamp': datetime.now().isoformat()
+                            })
+                except:
+                    pass
+
+            logger.info(f"DF (Selenium): {len(news_items)} noticias")
+            return news_items
+        except Exception as e:
+            logger.error(f"Error en scraping DF: {e}")
+            return []
+        finally:
+            if self.driver:
+                self.driver.quit()
+
     def close(self):
         """Cerrar el navegador"""
         if self.driver:

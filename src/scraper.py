@@ -72,8 +72,23 @@ class NewsletterScraper:
     def scrape_mercurio(self):
         try:
             logger.info("El Mercurio...")
-            self._login_mercurio()
 
+            # Intentar con Selenium si está disponible
+            if SELENIUM_AVAILABLE:
+                creds = self.credentials.get('mercurio', {})
+                if creds:
+                    selenium_scraper = SeleniumScraper()
+                    selenium_articles = selenium_scraper.scrape_mercurio_with_selenium(
+                        creds.get('username', ''),
+                        creds.get('password', '')
+                    )
+                    if selenium_articles:
+                        self.news_items.extend(selenium_articles)
+                        logger.info(f"El Mercurio (Selenium): {len(selenium_articles)} noticias")
+                        return
+
+            # Fallback
+            self._login_mercurio()
             response = self.session.get("https://www.elmercurio.com", timeout=15)
             soup = BeautifulSoup(response.content, 'html.parser')
             articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=25)
@@ -97,7 +112,7 @@ class NewsletterScraper:
                 except:
                     pass
 
-            logger.info(f"El Mercurio: {len([x for x in self.news_items if x['diary'] == 'El Mercurio'])} noticias")
+            logger.info(f"El Mercurio (fallback): {len([x for x in self.news_items if x['diary'] == 'El Mercurio'])} noticias")
         except Exception as e:
             logger.error(f"El Mercurio: {e}")
 
@@ -235,8 +250,23 @@ class NewsletterScraper:
     def scrape_df(self):
         try:
             logger.info("DF...")
-            self._login_df()
 
+            # Intentar con Selenium si está disponible
+            if SELENIUM_AVAILABLE:
+                creds = self.credentials.get('df', {})
+                if creds:
+                    selenium_scraper = SeleniumScraper()
+                    selenium_articles = selenium_scraper.scrape_df_with_selenium(
+                        creds.get('username', ''),
+                        creds.get('password', '')
+                    )
+                    if selenium_articles:
+                        self.news_items.extend(selenium_articles)
+                        logger.info(f"DF (Selenium): {len(selenium_articles)} noticias")
+                        return
+
+            # Fallback
+            self._login_df()
             response = self.session.get("https://www.df.cl", timeout=15)
             soup = BeautifulSoup(response.content, 'html.parser')
             articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=25)
@@ -260,7 +290,7 @@ class NewsletterScraper:
                 except:
                     pass
 
-            logger.info(f"DF: {len([x for x in self.news_items if x['diary'] == 'DF'])} noticias")
+            logger.info(f"DF (fallback): {len([x for x in self.news_items if x['diary'] == 'DF'])} noticias")
         except Exception as e:
             logger.error(f"DF: {e}")
 
