@@ -14,11 +14,7 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Ejecutar scraper
         env:
-          CREDENTIALS_JSON: ${{ secrets.CREDENTIALS_JSON }}
-          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          CREDENTIALS_ENCRYPTED: ${{ secrets.CREDENTIALS_ENCRYPTED }}
+          ENCRYPTION_PASSWORD: ${{ secrets.ENCRYPTION_PASSWORD }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: python3 src/scraper.py
