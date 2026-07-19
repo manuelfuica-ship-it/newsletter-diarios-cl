@@ -628,9 +628,9 @@
                 </div>
                 <button class="modal-close" onclick="closeModal()">✕</button>
             </div>
-            <div class="modal-body" style="padding: 0; flex: 1; display: flex; flex-direction: column;">
-                <iframe id="modalIframe" style="width: 100%; flex: 1; border: none; display: none;"></iframe>
-                <div class="modal-footer" style="border-top: 1px solid #e0e6ed; padding: 16px 40px;">
+            <div class="modal-body" style="padding: 0; flex: 1; display: flex; flex-direction: column; overflow: auto;">
+                <div id="modalContent" style="padding: 40px; flex: 1; overflow-y: auto; color: #2c3e50; line-height: 1.8; font-size: 16px;"></div>
+                <div class="modal-footer" style="border-top: 1px solid #e0e6ed; padding: 16px 40px; flex-shrink: 0;">
                     <a id="modalLink" class="modal-link" target="_blank">Abrir en nueva ventana →</a>
                 </div>
             </div>
@@ -737,25 +737,17 @@
             document.getElementById('modalSource').textContent = source;
             document.getElementById('modalLink').href = link;
 
-            // Cargar el artículo completo en iframe
-            const iframe = document.getElementById('modalIframe');
-            if (link) {
-                // Asegurarse de que el link sea completo (agregar dominio si es necesario)
-                let fullLink = link;
-                if (link.startsWith('/')) {
-                    // Determinar el dominio basado en la fuente
-                    const domains = {
-                        'El Mercurio': 'https://www.elmercurio.com',
-                        'La Tercera': 'https://www.latercera.com',
-                        'La Segunda': 'https://www.lasegunda.com',
-                        'DF': 'https://www.df.cl'
-                    };
-                    fullLink = (domains[source] || 'https://www.example.com') + link;
-                }
-                iframe.src = fullLink;
-                iframe.style.display = 'block';
+            // Mostrar contenido completo del artículo
+            const content = document.getElementById('modalContent');
+            if (description) {
+                // Formatear el contenido: convertir saltos de línea a párrafos
+                const formattedContent = description
+                    .split('\n\n')
+                    .map(para => `<p>${escapeHtml(para)}</p>`)
+                    .join('');
+                content.innerHTML = formattedContent;
             } else {
-                iframe.style.display = 'none';
+                content.innerHTML = '<p style="color: #999; text-align: center; padding: 40px;">Contenido no disponible</p>';
             }
 
             document.getElementById('newsModal').classList.add('active');

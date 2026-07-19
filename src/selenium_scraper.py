@@ -71,29 +71,47 @@ class SeleniumScraper:
             return False
 
     def scrape_article_content(self, url):
-        """Extraer contenido de un artículo usando Selenium"""
+        """Extraer CONTENIDO COMPLETO de un artículo"""
         try:
             self.driver.get(url)
             wait = WebDriverWait(self.driver, 10)
 
-            # Esperar a que cargue el contenido principal
-            wait.until(EC.presence_of_element_located((By.TAG_NAME, "article")))
+            # Esperar a que cargue el contenido
+            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
-            # Extraer contenido
             soup = BeautifulSoup(self.driver.page_source, 'html.parser')
 
-            # Buscar artículo
-            article = soup.find('article') or soup.find('main')
-            if article:
-                # Extraer texto del artículo
-                paragraphs = article.find_all('p')
-                content = '\n\n'.join([p.get_text().strip() for p in paragraphs if p.get_text().strip()])
-                return content[:2000]  # Primeros 2000 caracteres
+            # Buscar contenedor de artículo
+            article = soup.find('article') or soup.find('main') or soup.find(['div', 'section'], class_=lambda x: x and ('content' in str(x).lower() or 'article' in str(x).lower()))
 
-            return ""
+            if not article:
+                article = soup.body
+
+            if article:
+                # Extraer TODOS los párrafos y contenido
+                paragraphs = article.find_all('p')
+                content_lines = []
+
+                for p in paragraphs:
+                    text = p.get_text().strip()
+                    if text and len(text) > 10:  # Filtrar líneas muy cortas
+                        content_lines.append(text)
+
+                # También extraer h2, h3 como secciones
+                for heading in article.find_all(['h2', 'h3']):
+                    text = heading.get_text().strip()
+                    if text:
+                        content_lines.append(f"\n{text}\n")
+
+                content = '\n\n'.join(content_lines)
+
+                # Retornar TODO el contenido (sin límite de caracteres)
+                return content if content else "Contenido no disponible"
+
+            return "No se pudo extraer contenido"
         except Exception as e:
-            logger.debug(f"Error extrayendo contenido del artículo: {e}")
-            return ""
+            logger.debug(f"Error extrayendo contenido: {e}")
+            return "Error al cargar el artículo"
 
     def scrape_segunda_with_selenium(self, username, password):
         """Scraping de La Segunda usando Selenium"""
