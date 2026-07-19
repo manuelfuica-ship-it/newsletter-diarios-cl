@@ -714,7 +714,23 @@
             const statsGrid = document.getElementById('statsGrid');
             const totalNews = allNews.length;
             const medios = new Set(allNews.map(n => n.diary)).size;
-            const days = new Set(allNews.map(n => new Date(n.published).toISOString().split('T')[0])).size;
+
+            const validDates = allNews
+                .map(n => {
+                    try {
+                        if (n.published) {
+                            const date = new Date(n.published);
+                            if (!isNaN(date.getTime())) {
+                                return date.toISOString().split('T')[0];
+                            }
+                        }
+                        return null;
+                    } catch (e) {
+                        return null;
+                    }
+                })
+                .filter(d => d !== null);
+            const days = new Set(validDates).size;
 
             statsGrid.innerHTML = `
                 <div class="stat-card">
@@ -809,8 +825,17 @@
         function updateTrendsChart() {
             const dailyData = {};
             allNews.forEach(news => {
-                const date = new Date(news.published).toISOString().split('T')[0];
-                dailyData[date] = (dailyData[date] || 0) + 1;
+                try {
+                    if (news.published) {
+                        const date = new Date(news.published);
+                        if (!isNaN(date.getTime())) {
+                            const dateStr = date.toISOString().split('T')[0];
+                            dailyData[dateStr] = (dailyData[dateStr] || 0) + 1;
+                        }
+                    }
+                } catch (e) {
+                    // Ignorar fechas inválidas
+                }
             });
 
             const ctx = document.getElementById('trendsChart').getContext('2d');
