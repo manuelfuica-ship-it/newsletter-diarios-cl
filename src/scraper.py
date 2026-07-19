@@ -2,21 +2,62 @@
 import os
 import json
 import logging
+import base64
+import hashlib
 from datetime import datetime
 import feedparser
 import requests
 from bs4 import BeautifulSoup
+from Crypto.Cipher import AES
 from slack_sender import send_to_slack
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+def decrypt_credentials(encrypted_data, password):
+    """Descencripta credenciales encriptadas con crypto-js AES-256"""
+    try:
+        encrypted_bytes = base64.b64decode(encrypted_data)
+
+        if not encrypted_bytes.startswith(b'Salted__'):
+            raise ValueError("Formato de encriptación inválido")
+
+        salt = encrypted_bytes[8:16]
+        ciphertext = encrypted_bytes[16:]
+
+        def evp_bytes_to_key(password, salt, key_len, iv_len):
+            m = []
+            i = 0
+            while len(b''.join(m)) < (key_len + iv_len):
+                md5 = hashlib.md5()
+                if i == 0:
+                    data = password.encode() + salt
+                else:
+                    data = m[i - 1] + password.encode() + salt
+                md5.update(data)
+                m.append(md5.digest())
+                i += 1
+            ms = b''.join(m)
+            return ms[:key_len], ms[key_len:key_len + iv_len]
+
+        key, iv = evp_bytes_to_key(password, salt, 32, 16)
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        decrypted = cipher.decrypt(ciphertext)
+
+        padding_len = decrypted[-1]
+        decrypted = decrypted[:-padding_len]
+
+        return json.loads(decrypted.decode('utf-8'))
+    except Exception as e:
+        logger.error(f"Error desencriptando credenciales: {e}")
+        return None
 
 class NewsletterScraper:
     def __init__(self, credentials):
         self.credentials = {c['diary']: c for c in credentials}
         self.news_items = []
         self.session = requests.Session()
-        self.session.headers.update({'User-Agent': 'Mozilla/5.0'})
+        self.session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'})
 
     def scrape_all(self):
         logger.info("Iniciando scraping...")
@@ -44,9 +85,30 @@ class NewsletterScraper:
             by_diary[diary].append(item)
         return by_diary
 
+    def _login_mercurio(self):
+        """Intenta hacer login en El Mercurio"""
+        try:
+            creds = self.credentials.get('El Mercurio', {})
+            if not creds:
+                return False
+
+            logger.info("Intentando autenticación en El Mercurio...")
+            login_url = "https://www.elmercurio.com/login"
+            payload = {
+                'email': creds.get('user', ''),
+                'password': creds.get('password', '')
+            }
+            response = self.session.post(login_url, data=payload, timeout=10)
+            return response.status_code == 200
+        except Exception as e:
+            logger.debug(f"Login El Mercurio fallido: {e}")
+            return False
+
     def scrape_mercurio(self):
         try:
             logger.info("El Mercurio...")
+            self._login_mercurio()
+
             feed = feedparser.parse("https://www.elmercurio.com/rss")
             for entry in feed.entries[:10]:
                 self.news_items.append({
@@ -61,9 +123,30 @@ class NewsletterScraper:
         except Exception as e:
             logger.error(f"El Mercurio: {e}")
 
+    def _login_tercera(self):
+        """Intenta hacer login en La Tercera"""
+        try:
+            creds = self.credentials.get('La Tercera', {})
+            if not creds:
+                return False
+
+            logger.info("Intentando autenticación en La Tercera...")
+            login_url = "https://www.latercera.com/auth/login"
+            payload = {
+                'email': creds.get('user', ''),
+                'password': creds.get('password', '')
+            }
+            response = self.session.post(login_url, data=payload, timeout=10)
+            return response.status_code == 200
+        except Exception as e:
+            logger.debug(f"Login La Tercera fallido: {e}")
+            return False
+
     def scrape_tercera(self):
         try:
             logger.info("La Tercera...")
+            self._login_tercera()
+
             feed = feedparser.parse("https://www.latercera.com/rss")
             for entry in feed.entries[:10]:
                 self.news_items.append({
@@ -78,9 +161,30 @@ class NewsletterScraper:
         except Exception as e:
             logger.error(f"La Tercera: {e}")
 
+    def _login_segunda(self):
+        """Intenta hacer login en La Segunda"""
+        try:
+            creds = self.credentials.get('La Segunda', {})
+            if not creds:
+                return False
+
+            logger.info("Intentando autenticación en La Segunda...")
+            login_url = "https://www.lasegunda.com/login"
+            payload = {
+                'email': creds.get('user', ''),
+                'password': creds.get('password', '')
+            }
+            response = self.session.post(login_url, data=payload, timeout=10)
+            return response.status_code == 200
+        except Exception as e:
+            logger.debug(f"Login La Segunda fallido: {e}")
+            return False
+
     def scrape_segunda(self):
         try:
             logger.info("La Segunda...")
+            self._login_segunda()
+
             response = self.session.get("https://www.lasegunda.com", timeout=10)
             soup = BeautifulSoup(response.content, 'html.parser')
             articles = soup.find_all('article', limit=10)
@@ -100,9 +204,30 @@ class NewsletterScraper:
         except Exception as e:
             logger.error(f"La Segunda: {e}")
 
+    def _login_df(self):
+        """Intenta hacer login en DF"""
+        try:
+            creds = self.credentials.get('DF', {})
+            if not creds:
+                return False
+
+            logger.info("Intentando autenticación en DF...")
+            login_url = "https://www.df.cl/login"
+            payload = {
+                'email': creds.get('user', ''),
+                'password': creds.get('password', '')
+            }
+            response = self.session.post(login_url, data=payload, timeout=10)
+            return response.status_code == 200
+        except Exception as e:
+            logger.debug(f"Login DF fallido: {e}")
+            return False
+
     def scrape_df(self):
         try:
             logger.info("DF...")
+            self._login_df()
+
             feed = feedparser.parse("https://www.df.cl/rss")
             for entry in feed.entries[:10]:
                 self.news_items.append({
@@ -169,17 +294,19 @@ def save_news_to_json(newsletter, output_file='web/data/news.json'):
         return False
 
 def main():
-    credentials_json = os.getenv('CREDENTIALS_JSON', '')
-    if not credentials_json:
-        logger.error("CREDENTIALS_JSON no configurado")
+    encrypted_creds = os.getenv('CREDENTIALS_ENCRYPTED', '')
+    password = os.getenv('ENCRYPTION_PASSWORD', '')
+
+    if not encrypted_creds or not password:
+        logger.error("CREDENTIALS_ENCRYPTED o ENCRYPTION_PASSWORD no configurados")
         return False
 
-    try:
-        credentials = json.loads(credentials_json)
-        logger.info(f"Credenciales: {len(credentials)} diarios")
-    except Exception as e:
-        logger.error(f"Error: {e}")
+    credentials = decrypt_credentials(encrypted_creds, password)
+    if not credentials:
+        logger.error("Error al desencriptar credenciales")
         return False
+
+    logger.info(f"Credenciales desencriptadas: {len(credentials)} diarios")
 
     scraper = NewsletterScraper(credentials)
     newsletter = scraper.scrape_all()

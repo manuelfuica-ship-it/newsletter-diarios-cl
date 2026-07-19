@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Credenciales — Newsletter Diarios</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            color: #333;
+            margin: 0 0 30px;
+            font-size: 28px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin: 0 0 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        .credentials-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .credential-item {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .credential-info {
+            flex: 1;
+        }
+        .credential-info strong {
+            display: block;
+            color: #667eea;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+        .credential-info small {
+            color: #999;
+            font-size: 13px;
+        }
+        .credential-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .credential-actions button {
+            padding: 6px 12px;
+            font-size: 12px;
+            flex: 0;
+        }
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .diaries {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .diary-badge {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .loading {
+            display: inline-block;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Gestor de Credenciales</h1>
+        <p style="color: #999; margin-top: -20px; margin-bottom: 30px;">Newsletter Diarios — El Mercurio, La Tercera, La Segunda, DF</p>
+
+        <div id="alerts"></div>
+
+        <!-- Sección: Configuración de contraseña maestra -->
+        <div class="section">
+            <h2>🔑 Contraseña Maestra</h2>
+            <div class="form-group">
+                <label for="masterPassword">Ingresa tu contraseña maestra:</label>
+                <input type="password" id="masterPassword" placeholder="Crea una contraseña fuerte">
+            </div>
+            <p style="color: #999; font-size: 13px; margin: 10px 0 0;">
+                ⚠️ Esta contraseña encripta tus credenciales. No la olvides. No se almacena en el servidor.
+            </p>
+        </div>
+
+        <!-- Sección: Agregar credencial -->
+        <div class="section">
+            <h2>➕ Agregar Credencial</h2>
+            <div class="form-group">
+                <label for="diarySelect">Medio de prensa:</label>
+                <select id="diarySelect">
+                    <option value="">Seleccionar...</option>
+                    <option value="mercurio">El Mercurio</option>
+                    <option value="tercera">La Tercera</option>
+                    <option value="segunda">La Segunda</option>
+                    <option value="df">DF (Diario Financiero)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="username">Usuario/Email:</label>
+                <input type="text" id="username" placeholder="tu@email.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" placeholder="Tu contraseña del diario">
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="addCredential()">Guardar Credencial</button>
+                <button class="btn-secondary" onclick="clearForm()">Limpiar</button>
+            </div>
+        </div>
+
+        <!-- Sección: Credenciales almacenadas -->
+        <div class="section">
+            <h2>📋 Credenciales Almacenadas</h2>
+            <div id="credentialsList" class="credentials-list">
+                <p style="color: #999; font-size: 14px;">No hay credenciales guardadas aún.</p>
+            </div>
+        </div>
+
+        <!-- Sección: Exportar/Importar -->
+        <div class="section">
+            <h2>💾 Exportar/Importar</h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                Descarga tus credenciales encriptadas para guardar en un lugar seguro. Usa el archivo para importar en otra máquina.
+            </p>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="exportCredentials()">📥 Descargar JSON</button>
+                <button class="btn-secondary" onclick="triggerImport()">📤 Importar JSON</button>
+            </div>
+            <input type="file" id="importFile" accept=".json" style="display: none;">
+        </div>
+
+        <!-- Sección: Para GitHub -->
+        <div class="section">
+            <h2>🚀 Usar en GitHub</h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                Copia el contenido cifrado de abajo y guárdalo como <code>CREDENTIALS_ENCRYPTED</code> en GitHub Secrets.
+            </p>
+            <textarea id="encryptedOutput" readonly style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; font-size: 12px; background: #f9f9f9;"></textarea>
+            <button class="btn-secondary" onclick="copyToClipboard()" style="margin-top: 10px; width: 100%;">📋 Copiar al portapapeles</button>
+        </div>
+    </div>
+
+    <script>
+        // Cargar credenciales desde localStorage
+        function loadCredentials() {
+            const masterPassword = document.getElementById('masterPassword').value;
+            if (!masterPassword) {
+                showAlert('Ingresa la contraseña maestra primero', 'error');
+                return [];
+            }
+            try {
+                const encrypted = localStorage.getItem('credentials_encrypted');
+                if (!encrypted) return [];
+                const decrypted = CryptoJS.AES.decrypt(encrypted, masterPassword).toString(CryptoJS.enc.Utf8);
+                return JSON.parse(decrypted);
+            } catch (e) {
+                showAlert('Contraseña maestra incorrecta', 'error');
+                return [];
+            }
+        }
+
+        // Guardar credenciales en localStorage
+        function saveCredentials(credentials) {
+            const masterPassword = document.getElementById('masterPassword').value;
+            if (!masterPassword) {
+                showAlert('Ingresa la contraseña maestra primero', 'error');
+                return false;
+            }
+            try {
+                const encrypted = CryptoJS.AES.encrypt(JSON.stringify(credentials), masterPassword).toString();
+                localStorage.setItem('credentials_encrypted', encrypted);
+                updateEncryptedOutput(encrypted);
+                return true;
+            } catch (e) {
+                showAlert('Error al guardar credenciales', 'error');
+                return false;
+            }
+        }
+
+        // Agregar nueva credencial
+        function addCredential() {
+            const diary = document.getElementById('diarySelect').value;
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!diary || !username || !password) {
+                showAlert('Completa todos los campos', 'error');
+                return;
+            }
+
+            const credentials = loadCredentials();
+            credentials.push({ diary, username, password, timestamp: new Date().toISOString() });
+
+            if (saveCredentials(credentials)) {
+                showAlert(`Credencial guardada para ${diary}`, 'success');
+                clearForm();
+                renderCredentials();
+            }
+        }
+
+        // Eliminar credencial
+        function deleteCredential(index) {
+            if (!confirm('¿Eliminar esta credencial?')) return;
+            const credentials = loadCredentials();
+            credentials.splice(index, 1);
+            if (saveCredentials(credentials)) {
+                showAlert('Credencial eliminada', 'success');
+                renderCredentials();
+            }
+        }
+
+        // Mostrar credenciales
+        function renderCredentials() {
+            const credentials = loadCredentials();
+            const list = document.getElementById('credentialsList');
+
+            if (credentials.length === 0) {
+                list.innerHTML = '<p style="color: #999; font-size: 14px;">No hay credenciales guardadas aún.</p>';
+                return;
+            }
+
+            list.innerHTML = credentials.map((cred, idx) => {
+                const diaryNames = {
+                    mercurio: 'El Mercurio',
+                    tercera: 'La Tercera',
+                    segunda: 'La Segunda',
+                    df: 'DF'
+                };
+                return `
+                    <div class="credential-item">
+                        <div class="credential-info">
+                            <strong>${diaryNames[cred.diary] || cred.diary}</strong>
+                            <small>${cred.username}</small>
+                        </div>
+                        <div class="credential-actions">
+                            <button class="btn-danger" onclick="deleteCredential(${idx})">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Exportar credenciales
+        function exportCredentials() {
+            const encrypted = localStorage.getItem('credentials_encrypted');
+            if (!encrypted) {
+                showAlert('No hay credenciales para exportar', 'error');
+                return;
+            }
+            const blob = new Blob([JSON.stringify({ credentials_encrypted: encrypted }, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `newsletter-credenciales-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Importar credenciales
+        function triggerImport() {
+            document.getElementById('importFile').click();
+        }
+
+        document.getElementById('importFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if (data.credentials_encrypted) {
+                        localStorage.setItem('credentials_encrypted', data.credentials_encrypted);
+                        updateEncryptedOutput(data.credentials_encrypted);
+                        showAlert('Credenciales importadas correctamente', 'success');
+                        renderCredentials();
+                    }
+                } catch (e) {
+                    showAlert('Error al importar archivo', 'error');
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Actualizar output encriptado
+        function updateEncryptedOutput(encrypted) {
+            document.getElementById('encryptedOutput').value = encrypted;
+        }
+
+        // Copiar al portapapeles
+        function copyToClipboard() {
+            const textarea = document.getElementById('encryptedOutput');
+            if (!textarea.value) {
+                showAlert('No hay contenido para copiar', 'error');
+                return;
+            }
+            textarea.select();
+            document.execCommand('copy');
+            showAlert('Copiado al portapapeles ✓', 'success');
+        }
+
+        // Mostrar alertas
+        function showAlert(message, type = 'info') {
+            const alerts = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alerts.appendChild(alert);
+            setTimeout(() => alert.remove(), 4000);
+        }
+
+        // Limpiar formulario
+        function clearForm() {
+            document.getElementById('diarySelect').value = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCredentials();
+            const encrypted = localStorage.getItem('credentials_encrypted');
+            if (encrypted) updateEncryptedOutput(encrypted);
+        });
+
+        // Actualizar cuando cambia contraseña maestra
+        document.getElementById('masterPassword').addEventListener('change', renderCredentials);
+    </script>
+</body>
+</html>
