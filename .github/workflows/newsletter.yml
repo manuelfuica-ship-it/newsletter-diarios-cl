@@ -1,8 +1,6 @@
-    name: Newsletter Diarios
+name: Newsletter Diarios
 
 on:
-  # schedule:
-  #   - cron: '0 8 * * 1-5'  # PAUSADO: ejecutar lunes-viernes a las 08:00 UTC
   workflow_dispatch:
 
 jobs:
