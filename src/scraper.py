@@ -8,6 +8,12 @@ import requests
 from bs4 import BeautifulSoup
 from slack_sender import send_to_slack
 
+try:
+    from selenium_scraper import SeleniumScraper
+    SELENIUM_AVAILABLE = True
+except ImportError:
+    SELENIUM_AVAILABLE = False
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -155,12 +161,26 @@ class NewsletterScraper:
     def scrape_segunda(self):
         try:
             logger.info("La Segunda...")
-            self._login_segunda()
 
+            # Intentar con Selenium si está disponible
+            if SELENIUM_AVAILABLE:
+                creds = self.credentials.get('segunda', {})
+                if creds:
+                    selenium_scraper = SeleniumScraper()
+                    selenium_articles = selenium_scraper.scrape_segunda_with_selenium(
+                        creds.get('username', ''),
+                        creds.get('password', '')
+                    )
+                    if selenium_articles:
+                        self.news_items.extend(selenium_articles)
+                        logger.info(f"La Segunda (Selenium): {len(selenium_articles)} noticias")
+                        return
+
+            # Fallback a método simple
+            self._login_segunda()
             response = self.session.get("https://www.lasegunda.com", timeout=15)
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            # Buscar noticias por múltiples selectores
             articles = soup.find_all('article', limit=30)
             if not articles:
                 articles = soup.find_all(['div', 'li'], class_=lambda x: x and 'item' in x.lower(), limit=30)
@@ -189,7 +209,7 @@ class NewsletterScraper:
                 except:
                     pass
 
-            logger.info(f"La Segunda: {count} noticias")
+            logger.info(f"La Segunda (fallback): {count} noticias")
         except Exception as e:
             logger.error(f"La Segunda: {e}")
 
