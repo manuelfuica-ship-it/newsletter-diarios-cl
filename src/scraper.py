@@ -144,22 +144,17 @@ class NewsletterScraper:
             logger.info("La Segunda...")
             self._login_segunda()
 
-            response = self.session.get("https://www.lasegunda.com", timeout=10)
-            soup = BeautifulSoup(response.content, 'html.parser')
-            articles = soup.find_all('article', limit=10)
-            for article in articles:
-                title_elem = article.find('h2') or article.find('h3')
-                link_elem = article.find('a', href=True)
-                if title_elem and link_elem:
-                    self.news_items.append({
-                        'diary': 'La Segunda',
-                        'title': title_elem.get_text().strip(),
-                        'description': '',
-                        'link': link_elem.get('href', ''),
-                        'published': '',
-                        'timestamp': datetime.now().isoformat()
-                    })
-            logger.info(f"La Segunda: {len(articles)} noticias")
+            feed = feedparser.parse("https://www.lasegunda.com/feed/rss")
+            for entry in feed.entries[:10]:
+                self.news_items.append({
+                    'diary': 'La Segunda',
+                    'title': entry.get('title', 'Sin título'),
+                    'description': entry.get('summary', ''),
+                    'link': entry.get('link', ''),
+                    'published': entry.get('published', ''),
+                    'timestamp': datetime.now().isoformat()
+                })
+            logger.info(f"La Segunda: {len(feed.entries[:10])} noticias")
         except Exception as e:
             logger.error(f"La Segunda: {e}")
 
