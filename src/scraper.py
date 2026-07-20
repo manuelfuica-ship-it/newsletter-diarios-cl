@@ -9,10 +9,10 @@ from bs4 import BeautifulSoup
 from slack_sender import send_to_slack
 
 try:
-    from selenium_scraper import SeleniumScraper
-    SELENIUM_AVAILABLE = True
+    from playwright_scraper import PlaywrightScraper
+    PLAYWRIGHT_AVAILABLE = True
 except ImportError:
-    SELENIUM_AVAILABLE = False
+    PLAYWRIGHT_AVAILABLE = False
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -144,18 +144,18 @@ class NewsletterScraper:
         try:
             logger.info("El Mercurio...")
 
-            # Intentar con Selenium si está disponible
-            if SELENIUM_AVAILABLE:
+            # Intentar con Playwright si está disponible
+            if PLAYWRIGHT_AVAILABLE:
                 creds = self.credentials.get('mercurio', {})
                 if creds:
-                    selenium_scraper = SeleniumScraper()
-                    selenium_articles = selenium_scraper.scrape_mercurio_with_selenium(
+                    playwright_scraper = PlaywrightScraper()
+                    playwright_articles = playwright_scraper.scrape_mercurio(
                         creds.get('username', ''),
                         creds.get('password', '')
                     )
-                    if selenium_articles:
-                        self.news_items.extend(selenium_articles)
-                        logger.info(f"El Mercurio (Selenium): {len(selenium_articles)} noticias")
+                    if playwright_articles and len(playwright_articles) > 0:
+                        self.news_items.extend(playwright_articles)
+                        logger.info(f"El Mercurio (Playwright): {len(playwright_articles)} noticias")
                         return
 
             # Fallback: extraer TODOS los links y filtrar por noticias
@@ -267,18 +267,18 @@ class NewsletterScraper:
         try:
             logger.info("La Segunda...")
 
-            # Intentar con Selenium si está disponible
-            if SELENIUM_AVAILABLE:
+            # Intentar con Playwright si está disponible
+            if PLAYWRIGHT_AVAILABLE:
                 creds = self.credentials.get('segunda', {})
                 if creds:
-                    selenium_scraper = SeleniumScraper()
-                    selenium_articles = selenium_scraper.scrape_segunda_with_selenium(
+                    playwright_scraper = PlaywrightScraper()
+                    playwright_articles = playwright_scraper.scrape_segunda(
                         creds.get('username', ''),
                         creds.get('password', '')
                     )
-                    if selenium_articles:
-                        self.news_items.extend(selenium_articles)
-                        logger.info(f"La Segunda (Selenium): {len(selenium_articles)} noticias")
+                    if playwright_articles and len(playwright_articles) > 0:
+                        self.news_items.extend(playwright_articles)
+                        logger.info(f"La Segunda (Playwright): {len(playwright_articles)} noticias")
                         return
 
             # Fallback mejorado con resúmenes más largos
@@ -349,18 +349,18 @@ class NewsletterScraper:
         try:
             logger.info("DF...")
 
-            # Intentar con Selenium si está disponible
-            if SELENIUM_AVAILABLE:
+            # Intentar con Playwright si está disponible
+            if PLAYWRIGHT_AVAILABLE:
                 creds = self.credentials.get('df', {})
                 if creds:
-                    selenium_scraper = SeleniumScraper()
-                    selenium_articles = selenium_scraper.scrape_df_with_selenium(
+                    playwright_scraper = PlaywrightScraper()
+                    playwright_articles = playwright_scraper.scrape_df(
                         creds.get('username', ''),
                         creds.get('password', '')
                     )
-                    if selenium_articles:
-                        self.news_items.extend(selenium_articles)
-                        logger.info(f"DF (Selenium): {len(selenium_articles)} noticias")
+                    if playwright_articles and len(playwright_articles) > 0:
+                        self.news_items.extend(playwright_articles)
+                        logger.info(f"DF (Playwright): {len(playwright_articles)} noticias")
                         return
 
             # Fallback: extraer TODOS los links y filtrar por noticias
