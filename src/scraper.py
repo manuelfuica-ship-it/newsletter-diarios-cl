@@ -138,43 +138,48 @@ class NewsletterScraper:
                         logger.info(f"El Mercurio (Selenium): {len(selenium_articles)} noticias")
                         return
 
-            # Fallback mejorado con resúmenes
+            # Fallback: extraer TODOS los links y filtrar por noticias
             self._login_mercurio()
             response = self.session.get("https://www.elmercurio.com", timeout=15)
             soup = BeautifulSoup(response.content, 'html.parser')
-            articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=20)
 
+            # Buscar todos los links que parecen noticias
+            all_links = soup.find_all('a', href=True)
+            seen_titles = set()
             count = 0
-            for article in articles:
+
+            for link_elem in all_links:
                 try:
-                    title_elem = article.find(['h1', 'h2', 'h3', 'a'])
-                    link_elem = article.find('a', href=True)
-                    link = link_elem.get('href', '') if link_elem else ''
+                    link = link_elem.get('href', '').strip()
+                    title = link_elem.get_text().strip()
 
-                    if title_elem and link:
-                        title = title_elem.get_text().strip()
-                        if len(title) > 5:
-                            # Extraer resumen más largo
-                            full_link = link if link.startswith('http') else f"https://www.elmercurio.com{link}"
-                            description = self.extract_summary(full_link)
+                    # Filtrar por URL que parecen noticias y títulos decentes
+                    if (title and len(title) > 10 and len(title) < 200 and
+                        ('/noticia/' in link or '/articulo/' in link or link.startswith('/')) and
+                        title not in seen_titles):
 
-                            # Fallback: si no hay descripción, crear una por defecto
-                            if not description or len(description) < 100:
-                                description = f"{title}\n\n[Haz clic en 'Leer más' para ver el artículo completo en El Mercurio]"
+                        seen_titles.add(title)
+                        full_link = link if link.startswith('http') else f"https://www.elmercurio.com{link}"
+                        description = self.extract_summary(full_link)
 
-                            self.news_items.append({
-                                'diary': 'El Mercurio',
-                                'title': title,
-                                'description': description,
-                                'link': full_link,
-                                'published': '',
-                                'timestamp': datetime.now().isoformat()
-                            })
-                            count += 1
+                        if not description or len(description) < 100:
+                            description = f"{title}\n\n[Haz clic en 'Leer más' para ver el artículo completo en El Mercurio]"
+
+                        self.news_items.append({
+                            'diary': 'El Mercurio',
+                            'title': title,
+                            'description': description,
+                            'link': full_link,
+                            'published': '',
+                            'timestamp': datetime.now().isoformat()
+                        })
+                        count += 1
+                        if count >= 15:
+                            break
                 except:
                     pass
 
-            logger.info(f"El Mercurio (resúmenes mejorados): {count} noticias")
+            logger.info(f"El Mercurio: {count} noticias")
         except Exception as e:
             logger.error(f"El Mercurio: {e}")
 
@@ -333,43 +338,48 @@ class NewsletterScraper:
                         logger.info(f"DF (Selenium): {len(selenium_articles)} noticias")
                         return
 
-            # Fallback mejorado con resúmenes
+            # Fallback: extraer TODOS los links y filtrar por noticias
             self._login_df()
             response = self.session.get("https://www.df.cl", timeout=15)
             soup = BeautifulSoup(response.content, 'html.parser')
-            articles = soup.find_all(['article', 'div'], class_=lambda x: x and ('news' in x.lower() or 'article' in x.lower() or 'noticia' in x.lower()), limit=20)
 
+            # Buscar todos los links que parecen noticias
+            all_links = soup.find_all('a', href=True)
+            seen_titles = set()
             count = 0
-            for article in articles:
+
+            for link_elem in all_links:
                 try:
-                    title_elem = article.find(['h1', 'h2', 'h3', 'a'])
-                    link_elem = article.find('a', href=True)
-                    link = link_elem.get('href', '') if link_elem else ''
+                    link = link_elem.get('href', '').strip()
+                    title = link_elem.get_text().strip()
 
-                    if title_elem and link:
-                        title = title_elem.get_text().strip()
-                        if len(title) > 5:
-                            # Extraer resumen más largo
-                            full_link = link if link.startswith('http') else f"https://www.df.cl{link}"
-                            description = self.extract_summary(full_link)
+                    # Filtrar por URL que parecen noticias y títulos decentes
+                    if (title and len(title) > 10 and len(title) < 200 and
+                        ('/noticia/' in link or '/articulo/' in link or '/news/' in link or link.startswith('/')) and
+                        title not in seen_titles):
 
-                            # Fallback: si no hay descripción, crear una por defecto
-                            if not description or len(description) < 100:
-                                description = f"{title}\n\n[Haz clic en 'Leer más' para ver el artículo completo en DF]"
+                        seen_titles.add(title)
+                        full_link = link if link.startswith('http') else f"https://www.df.cl{link}"
+                        description = self.extract_summary(full_link)
 
-                            self.news_items.append({
-                                'diary': 'DF',
-                                'title': title,
-                                'description': description,
-                                'link': full_link,
-                                'published': '',
-                                'timestamp': datetime.now().isoformat()
-                            })
-                            count += 1
+                        if not description or len(description) < 100:
+                            description = f"{title}\n\n[Haz clic en 'Leer más' para ver el artículo completo en DF]"
+
+                        self.news_items.append({
+                            'diary': 'DF',
+                            'title': title,
+                            'description': description,
+                            'link': full_link,
+                            'published': '',
+                            'timestamp': datetime.now().isoformat()
+                        })
+                        count += 1
+                        if count >= 15:
+                            break
                 except:
                     pass
 
-            logger.info(f"DF (resúmenes mejorados): {count} noticias")
+            logger.info(f"DF: {count} noticias")
         except Exception as e:
             logger.error(f"DF: {e}")
 
