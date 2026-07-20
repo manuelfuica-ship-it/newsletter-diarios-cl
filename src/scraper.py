@@ -2,11 +2,19 @@
 import os
 import json
 import logging
+import subprocess
 from datetime import datetime
 import feedparser
 import requests
 from bs4 import BeautifulSoup
 from slack_sender import send_to_slack
+
+# Instalar navegadores Playwright si es necesario
+try:
+    import playwright
+    subprocess.run(['python3', '-m', 'playwright', 'install'], check=False)
+except Exception as e:
+    print(f"Aviso: No se pudieron instalar navegadores Playwright: {e}")
 
 try:
     from playwright_scraper import PlaywrightScraper
