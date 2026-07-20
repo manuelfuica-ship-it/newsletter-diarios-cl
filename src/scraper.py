@@ -239,9 +239,10 @@ class NewsletterScraper:
 
             feed = feedparser.parse("https://www.latercera.com/rss")
             for entry in feed.entries[:30]:
+                title = entry.get('title', 'Sin título')
                 self.news_items.append({
                     'diary': 'La Tercera',
-                    'title': entry.get('title', 'Sin título'),
+                    'title': title,
                     'description': entry.get('summary', ''),
                     'link': entry.get('link', ''),
                     'published': entry.get('published', ''),
@@ -423,9 +424,10 @@ class NewsletterScraper:
             logger.info("BioBioChile...")
             feed = feedparser.parse("https://www.biobiochile.cl/rss/")
             for entry in feed.entries[:8]:
+                title = entry.get('title', 'Sin título')
                 self.news_items.append({
                     'diary': 'BioBioChile',
-                    'title': entry.get('title', 'Sin título'),
+                    'title': title,
                     'description': entry.get('summary', ''),
                     'link': entry.get('link', ''),
                     'published': entry.get('published', ''),
@@ -441,9 +443,10 @@ class NewsletterScraper:
             logger.info("CNN Chile...")
             feed = feedparser.parse("https://www.cnnchile.com/feed/rss/")
             for entry in feed.entries[:8]:
+                title = entry.get('title', 'Sin título')
                 self.news_items.append({
                     'diary': 'CNN Chile',
-                    'title': entry.get('title', 'Sin título'),
+                    'title': title,
                     'description': entry.get('summary', ''),
                     'link': entry.get('link', ''),
                     'published': entry.get('published', ''),
