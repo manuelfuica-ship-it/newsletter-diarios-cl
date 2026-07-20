@@ -671,6 +671,15 @@
                 </button>
             `).join('');
 
+            // Generar badges de categorías
+            const categories = ['Todos', ...new Set(allNews.map(n => n.category || 'General').filter(c => c))];
+            const categoryBadges = document.getElementById('categoryBadges');
+            categoryBadges.innerHTML = categories.map(category => `
+                <button class="category-badge ${selectedCategory === category ? 'active' : ''}" onclick="selectCategory('${category}'); filterNews()">
+                    ${category}
+                </button>
+            `).join('');
+
             const filtered = getFilteredNews();
             const container = document.getElementById('newsContainer');
 
@@ -702,6 +711,10 @@
             selectedDiary = diary;
         }
 
+        function selectCategory(category) {
+            selectedCategory = category;
+        }
+
         function getFilteredNews() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const dateFrom = document.getElementById('dateFrom').value;
@@ -709,6 +722,7 @@
 
             return allNews.filter(news => {
                 const matchDiary = selectedDiary === 'Todos' || news.diary === selectedDiary;
+                const matchCategory = selectedCategory === 'Todos' || (news.category || 'General') === selectedCategory;
 
                 const matchSearch = !search ||
                     news.title.toLowerCase().includes(search) ||
@@ -729,7 +743,7 @@
                 const matchDateFrom = !dateFrom || !newsDate || newsDate >= dateFrom;
                 const matchDateTo = !dateTo || !newsDate || newsDate <= dateTo;
 
-                return matchDiary && matchSearch && matchDateFrom && matchDateTo;
+                return matchDiary && matchCategory && matchSearch && matchDateFrom && matchDateTo;
             });
         }
 
