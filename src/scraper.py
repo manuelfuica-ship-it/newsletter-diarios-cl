@@ -24,6 +24,26 @@ class NewsletterScraper:
         self.session = requests.Session()
         self.session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'})
 
+        # Categorías por palabras clave
+        self.categories = {
+            'Política': ['política', 'elección', 'congreso', 'gobierno', 'senado', 'diputado', 'ley', 'parlamento'],
+            'Economía': ['economía', 'mercado', 'bolsa', 'dólar', 'precio', 'empleo', 'inflación', 'financiero'],
+            'Tecnología': ['tecnología', 'software', 'app', 'digital', 'internet', 'computadora', 'smartp', 'tech'],
+            'Deporte': ['deporte', 'fútbol', 'tenis', 'rugby', 'atleta', 'copa', 'gol', 'campeonato'],
+            'Cultura': ['cultura', 'cine', 'música', 'arte', 'teatro', 'literatura', 'artista', 'película'],
+            'Salud': ['salud', 'médico', 'hospital', 'enfermedad', 'virus', 'vacuna', 'covid', 'médica'],
+            'Mundo': ['internacional', 'mundo', 'exterior', 'país', 'europa', 'asia', 'américa', 'global']
+        }
+
+    def categorize_article(self, title):
+        """Asignar categoría a un artículo basada en palabras clave"""
+        title_lower = title.lower()
+        for category, keywords in self.categories.items():
+            for keyword in keywords:
+                if keyword in title_lower:
+                    return category
+        return 'General'
+
     def scrape_all(self):
         logger.info("Iniciando scraping...")
         self.scrape_mercurio()
@@ -168,10 +188,12 @@ class NewsletterScraper:
                         self.news_items.append({
                             'diary': 'El Mercurio',
                             'title': title,
+
                             'description': description,
                             'link': full_link,
                             'published': '',
-                            'timestamp': datetime.now().isoformat()
+                            'category': self.categorize_article(title),
+                    'timestamp': datetime.now().isoformat()
                         })
                         count += 1
                         if count >= 15:
@@ -215,6 +237,7 @@ class NewsletterScraper:
                     'description': entry.get('summary', ''),
                     'link': entry.get('link', ''),
                     'published': entry.get('published', ''),
+                    'category': self.categorize_article(title),
                     'timestamp': datetime.now().isoformat()
                 })
             logger.info(f"La Tercera: {len(feed.entries[:30])} noticias")
@@ -288,10 +311,12 @@ class NewsletterScraper:
                             self.news_items.append({
                                 'diary': 'La Segunda',
                                 'title': title,
+
                                 'description': description,
                                 'link': full_link,
                                 'published': '',
-                                'timestamp': datetime.now().isoformat()
+                                'category': self.categorize_article(title),
+                    'timestamp': datetime.now().isoformat()
                             })
                             count += 1
                 except:
@@ -368,10 +393,12 @@ class NewsletterScraper:
                         self.news_items.append({
                             'diary': 'DF',
                             'title': title,
+
                             'description': description,
                             'link': full_link,
                             'published': '',
-                            'timestamp': datetime.now().isoformat()
+                            'category': self.categorize_article(title),
+                    'timestamp': datetime.now().isoformat()
                         })
                         count += 1
                         if count >= 15:
@@ -394,6 +421,7 @@ class NewsletterScraper:
                     'description': entry.get('summary', ''),
                     'link': entry.get('link', ''),
                     'published': entry.get('published', ''),
+                    'category': self.categorize_article(title),
                     'timestamp': datetime.now().isoformat()
                 })
             logger.info(f"BioBioChile: {len(feed.entries[:8])} noticias")
@@ -411,6 +439,7 @@ class NewsletterScraper:
                     'description': entry.get('summary', ''),
                     'link': entry.get('link', ''),
                     'published': entry.get('published', ''),
+                    'category': self.categorize_article(title),
                     'timestamp': datetime.now().isoformat()
                 })
             logger.info(f"CNN Chile: {len(feed.entries[:8])} noticias")
