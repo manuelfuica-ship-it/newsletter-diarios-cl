@@ -629,7 +629,7 @@
                     <div class="modal-source" id="modalSource"></div>
                     <h2 id="modalTitle"></h2>
                 </div>
-                <button class="modal-close" onclick="closeModal()">✕</button>
+                <button class="modal-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body" style="padding: 0; flex: 1; display: flex; flex-direction: column; overflow: auto;">
                 <div id="modalContent" style="padding: 24px 32px; flex: 1; overflow-y: auto; color: #2c3e50; line-height: 1.8; font-size: 15px;"></div>
@@ -642,7 +642,7 @@
 
     <script>
         let allNews = [];
-        let selectedCategory = 'Todas';
+        let selectedCategory = 'Todos';
         let selectedDiary = 'Todos';
         let charts = {
             source: null,
@@ -684,6 +684,9 @@
 
             const filtered = getFilteredNews();
             const container = document.getElementById('newsContainer');
+
+            // Actualizar contador de resultados
+            document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length !== 1 ? 's' : ''}`;
 
             if (filtered.length === 0) {
                 container.innerHTML = '<div class="empty-state"><h2>No hay noticias</h2><p>Intenta cambiar los filtros</p></div>';
@@ -854,7 +857,7 @@
             const sourceData = {};
             const categoryData = {
                 'Economía': 0, 'Política': 0, 'Deportes': 0, 'Internacional': 0,
-                'Tecnología': 0, 'Cultura': 0, 'Salud': 0, 'Casinos': 0, 'Otros': 0
+                'Tecnología': 0, 'Cultura': 0, 'Salud': 0, 'Juego online y casinos': 0, 'Otros': 0
             };
 
             allNews.forEach(news => {
@@ -870,6 +873,7 @@
 
         function getCategoryFromTitle(title) {
             const keywords = {
+                'Juego online y casinos': ['casino', 'juego', 'apuestas', 'entretenimiento', 'online', 'poker', 'slots', 'ruleta', 'blackjack', 'tragaperras'],
                 'Economía': ['mercado', 'bolsa', 'dólar', 'economía', 'impuestos', 'exportación', 'empresa'],
                 'Política': ['gobierno', 'congreso', 'presidente', 'senador', 'reforma', 'ley', 'política'],
                 'Deportes': ['fútbol', 'deporte', 'campeonato', 'jugador', 'equipo', 'partido'],
@@ -877,7 +881,6 @@
                 'Tecnología': ['tecnología', 'app', 'software', 'ia', 'inteligencia', 'digital'],
                 'Cultura': ['cultura', 'arte', 'cine', 'música', 'teatro', 'libro'],
                 'Salud': ['salud', 'médico', 'hospital', 'enfermedad', 'covid', 'vacuna'],
-                'Casinos': ['casino', 'juego', 'apuestas', 'entretenimiento'],
             };
 
             const lower = title.toLowerCase();
