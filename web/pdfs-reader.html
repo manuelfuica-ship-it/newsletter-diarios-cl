@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lector de Ediciones - Newsletter Diarios</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            padding: 0 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .pdf-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f9f9f9;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .pdf-item:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+            transform: translateX(4px);
+        }
+
+        .pdf-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pdf-item-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .pdf-item-size {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        .sidebar-footer {
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            background: #f9f9f9;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .storage-info {
+            margin-bottom: 10px;
+        }
+
+        .storage-bar {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+
+        .storage-used {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 8px;
+            font-size: 11px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-small:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: white;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toolbar-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pages-info {
+            font-size: 13px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .viewer-container {
+            flex: 1;
+            overflow: auto;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #pdfCanvas {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h2 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f0f0f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-local {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-remote {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            .main {
+                height: auto;
+                flex: 1;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .toolbar-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>📰 Mis Ediciones</h1>
+            <p>Almacenadas localmente</p>
+        </div>
+
+        <div class="sidebar-content" id="sidebarContent">
+            <div class="empty-state">
+                <div class="empty-state-icon">📂</div>
+                <p>Sin ediciones descargadas</p>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="storage-info">
+                <div>Almacenamiento usado:</div>
+                <div class="storage-bar">
+                    <div class="storage-used" id="storageBar" style="width: 0%"></div>
+                </div>
+                <div id="storageText" style="font-size: 11px; margin-top: 5px;">--</div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-small" onclick="app.fetchRemotePDFs()">🔄 Sincronizar</button>
+                <button class="btn-small" onclick="app.clearStorage()">🗑️ Limpiar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main viewer -->
+    <div class="main">
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <span class="toolbar-title" id="currentFileName">Selecciona un archivo</span>
+                <span class="status-badge status-local" id="statusBadge" style="display: none;">📱 Local</span>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn btn-secondary" id="prevBtn" onclick="app.prevPage()" disabled>← Anterior</button>
+                <div class="pages-info">
+                    <span id="pageInfo">0 / 0</span>
+                </div>
+                <button class="btn btn-secondary" id="nextBtn" onclick="app.nextPage()" disabled>Siguiente →</button>
+                <button class="btn btn-primary" id="downloadBtn" onclick="app.downloadCurrentPDF()" style="display: none;">⬇️ Descargar</button>
+            </div>
+        </div>
+
+        <div class="viewer-container" id="viewerContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">📖</div>
+                <h2>Selecciona una edición para leer</h2>
+                <p>O sincroniza para descargar nuevas ediciones disponibles</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para descargar -->
+    <div class="modal" id="downloadModal">
+        <div class="modal-content">
+            <div class="modal-title">Descargando edición...</div>
+            <div style="text-align: center; margin: 30px 0;">
+                <div class="loading-spinner"></div>
+                <p id="downloadStatus" style="margin-top: 20px; color: #666;">Iniciando descarga...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set up PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        const GITHUB_API = 'https://api.github.com/repos/manuelfuica-ship-it/newsletter-diarios-cl/contents/web/pdfs';
+        const GITHUB_RAW = 'https://raw.githubusercontent.com/manuelfuica-ship-it/newsletter-diarios-cl/main/web/pdfs';
+
+        class PDFReader {
+            constructor() {
+                this.db = null;
+                this.currentPDF = null;
+                this.currentPage = 1;
+                this.totalPages = 0;
+                this.remotePDFs = [];
+                this.localPDFs = new Map();
+                this.init();
+            }
+
+            async init() {
+                await this.initDB();
+                await this.loadLocalPDFs();
+                await this.fetchRemotePDFs();
+                this.updateStorageInfo();
+                this.renderSidebar();
+            }
+
+            async initDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open('PDFReaderDB', 1);
+
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => {
+                        this.db = request.result;
+                        resolve();
+                    };
+
+                    request.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains('pdfs')) {
+                            db.createObjectStore('pdfs', { keyPath: 'id' });
+                        }
+                    };
+                });
+            }
+
+            async loadLocalPDFs() {
+                return new Promise((resolve) => {
+                    const transaction = this.db.transaction(['pdfs'], 'readonly');
+                    const store = transaction.objectStore('pdfs');
+                    const request = store.getAll();
+
+                    request.onsuccess = () => {
+                        this.localPDFs.clear();
+                        request.result.forEach(pdf => {
+                            this.localPDFs.set(pdf.id, pdf);
+                        });
+                        resolve();
+                    };
+                });
+            }
+
+            async fetchRemotePDFs() {
+                try {
+                    const response = await fetch(GITHUB_API);
+                    if (!response.ok) throw new Error('No se pudieron obtener los PDFs');
+
+                    const files = await response.json();
+                    this.remotePDFs = files
+                        .filter(f => f.name.endsWith('.pdf'))
+                        .map(f => ({
+                            id: f.name,
+                            name: f.name,
+                            size: f.size,
+                            url: `${GITHUB_RAW}/${f.name}`
+                        }))
+                        .sort((a, b) => b.name.localeCompare(a.name));
+
+                    console.log(`${this.remotePDFs.length} PDFs disponibles en GitHub`);
+                } catch (error) {
+                    console.error('Error fetching remote PDFs:', error);
+                }
+            }
+
+            renderSidebar() {
+                const container = document.getElementById('sidebarContent');
+
+                if (this.localPDFs.size === 0 && this.remotePDFs.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📂</div>
+                            <p>Sin ediciones</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+
+                // PDFs locales
+                if (this.localPDFs.size > 0) {
+                    html += '<div class="section">';
+                    html += '<div class="section-title">📱 En tu dispositivo</div>';
+                    this.localPDFs.forEach((pdf, id) => {
+                        const sizeMB = (pdf.size / (1024 * 1024)).toFixed(1);
+                        html += `
+                            <div class="pdf-item ${this.currentPDF?.id === id ? 'active' : ''}"
+                                 onclick="app.openPDF('${id}')">
+                                <div class="pdf-item-name">${pdf.name}</div>
+                                <div class="pdf-item-size">${sizeMB} MB • Local</div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                // PDFs remotos no descargados
+                const notDownloaded = this.remotePDFs.filter(r => !this.localPDFs.has(r.id));
+                if (notDownloaded.length > 0) {
+                    html += '<div class="section">';
+                    html += '<div class="section-title">🌐 Disponibles en línea</div>';
+                    notDownloaded.forEach(pdf => {
+                        const sizeMB = (pdf.size / (1024 * 1024)).toFixed(1);
+                        html += `
+                            <div class="pdf-item" onclick="app.downloadPDF('${pdf.id}')">
+                                <div class="pdf-item-name">${pdf.name}</div>
+                                <div class="pdf-item-size">${sizeMB} MB • Descargar</div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                container.innerHTML = html;
+            }
+
+            async downloadPDF(pdfId) {
+                const remote = this.remotePDFs.find(p => p.id === pdfId);
+                if (!remote) return;
+
+                // Show modal
+                document.getElementById('downloadModal').classList.add('active');
+                document.getElementById('downloadStatus').textContent = `Descargando ${remote.name}...`;
+
+                try {
+                    const response = await fetch(remote.url);
+                    if (!response.ok) throw new Error('Error en descarga');
+
+                    const blob = await response.blob();
+
+                    // Save to IndexedDB
+                    const pdf = {
+                        id: pdfId,
+                        name: remote.name,
+                        size: blob.size,
+                        data: blob,
+                        downloadedAt: new Date().toISOString()
+                    };
+
+                    await this.savePDFToDb(pdf);
+
+                    document.getElementById('downloadStatus').textContent = '✅ Descarga completada';
+                    await this.loadLocalPDFs();
+                    this.updateStorageInfo();
+                    this.renderSidebar();
+                    this.openPDF(pdfId);
+
+                    setTimeout(() => {
+                        document.getElementById('downloadModal').classList.remove('active');
+                    }, 1000);
+                } catch (error) {
+                    console.error('Download error:', error);
+                    document.getElementById('downloadStatus').textContent = '❌ Error en descarga';
+                    setTimeout(() => {
+                        document.getElementById('downloadModal').classList.remove('active');
+                    }, 2000);
+                }
+            }
+
+            async savePDFToDb(pdf) {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['pdfs'], 'readwrite');
+                    const store = transaction.objectStore('pdfs');
+                    const request = store.put(pdf);
+
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => resolve();
+                });
+            }
+
+            async openPDF(pdfId) {
+                const pdf = this.localPDFs.get(pdfId);
+                if (!pdf) return;
+
+                this.currentPDF = pdf;
+                this.currentPage = 1;
+
+                document.getElementById('currentFileName').textContent = pdf.name;
+                document.getElementById('statusBadge').style.display = 'inline-block';
+                document.getElementById('downloadBtn').style.display = 'none';
+
+                try {
+                    const pdfDoc = await pdfjsLib.getDocument({ data: pdf.data }).promise;
+                    this.totalPages = pdfDoc.numPages;
+                    this.currentPDFDoc = pdfDoc;
+                    this.renderPage(1);
+                    this.renderSidebar();
+                    this.updatePageNavigation();
+                } catch (error) {
+                    console.error('PDF loading error:', error);
+                }
+            }
+
+            async renderPage(pageNum) {
+                const container = document.getElementById('viewerContainer');
+
+                if (!this.currentPDFDoc) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><p>Error al cargar PDF</p></div>';
+                    return;
+                }
+
+                const page = await this.currentPDFDoc.getPage(pageNum);
+                const viewport = page.getViewport({ scale: 2 });
+
+                const canvas = document.createElement('canvas');
+                canvas.id = 'pdfCanvas';
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                }).promise;
+
+                container.innerHTML = '';
+                container.appendChild(canvas);
+
+                this.currentPage = pageNum;
+                this.updatePageNavigation();
+            }
+
+            prevPage() {
+                if (this.currentPage > 1) {
+                    this.renderPage(this.currentPage - 1);
+                }
+            }
+
+            nextPage() {
+                if (this.currentPage < this.totalPages) {
+                    this.renderPage(this.currentPage + 1);
+                }
+            }
+
+            updatePageNavigation() {
+                document.getElementById('pageInfo').textContent = `${this.currentPage} / ${this.totalPages}`;
+                document.getElementById('prevBtn').disabled = this.currentPage <= 1;
+                document.getElementById('nextBtn').disabled = this.currentPage >= this.totalPages;
+            }
+
+            updateStorageInfo() {
+                let totalSize = 0;
+                this.localPDFs.forEach(pdf => {
+                    totalSize += pdf.size || 0;
+                });
+
+                const maxStorage = 50 * 1024 * 1024; // 50 MB
+                const percentUsed = (totalSize / maxStorage) * 100;
+
+                document.getElementById('storageBar').style.width = percentUsed + '%';
+                document.getElementById('storageText').textContent =
+                    `${(totalSize / (1024 * 1024)).toFixed(1)} MB / ${(maxStorage / (1024 * 1024)).toFixed(0)} MB`;
+            }
+
+            async clearStorage() {
+                if (confirm('¿Eliminar todas las ediciones locales?')) {
+                    const transaction = this.db.transaction(['pdfs'], 'readwrite');
+                    transaction.objectStore('pdfs').clear();
+
+                    await this.loadLocalPDFs();
+                    this.currentPDF = null;
+                    this.updateStorageInfo();
+                    this.renderSidebar();
+                    document.getElementById('viewerContainer').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📂</div>
+                            <h2>Almacenamiento limpio</h2>
+                            <p>Sincroniza para descargar ediciones</p>
+                        </div>
+                    `;
+                }
+            }
+
+            async downloadCurrentPDF() {
+                if (!this.currentPDF) return;
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(this.currentPDF.data);
+                link.download = this.currentPDF.name;
+                link.click();
+            }
+
+            async fetchRemotePDFs() {
+                await this.fetchRemotePDFs.call(this);
+                this.renderSidebar();
+            }
+        }
+
+        // Global instance
+        const app = new PDFReader();
+    </script>
+</body>
+</html>
