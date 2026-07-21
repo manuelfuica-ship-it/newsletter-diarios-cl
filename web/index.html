@@ -746,6 +746,12 @@
                     return false;
                 }
 
+                // Filtrar artículos donde la descripción es idéntica al título
+                const descriptionStart = news.description.split('\n')[0].trim();
+                if (descriptionStart === news.title.trim()) {
+                    return false;
+                }
+
                 const matchDiary = selectedDiary === 'Todos' || news.diary === selectedDiary;
                 const matchCategory = selectedCategory === 'Todos' || (news.category || 'General') === selectedCategory;
 
