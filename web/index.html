@@ -658,6 +658,12 @@
                 // v2.1 - Categoría Juego online y casinos agregada
                 const response = await fetch('data/news.json?t=' + Date.now());
                 allNews = await response.json();
+
+                // Reasignar categorías basadas en palabras clave
+                allNews.forEach(news => {
+                    news.category = getCategoryFromTitle(news.title);
+                });
+
                 renderNews();
                 updateStats();
                 updateLastUpdate();
