@@ -685,8 +685,8 @@
 
             // Generar badges de categorías - incluir todas las categorías definidas
             const allCategories = new Set(allNews.map(n => n.category || 'General'));
-            allCategories.add('Juego online y casinos');
-            const categories = ['Todos', ...Array.from(allCategories).sort()];
+            allCategories.delete('Juego online y casinos'); // Remover para ordenar manualmente
+            const categories = ['Todos', 'Juego online y casinos', ...Array.from(allCategories).sort()];
             const categoryBadges = document.getElementById('categoryBadges');
             categoryBadges.innerHTML = categories.map(category => `
                 <button class="category-badge ${selectedCategory === category ? 'active' : ''}" onclick="selectCategory('${category}'); filterNews()">
@@ -738,6 +738,14 @@
             const dateTo = document.getElementById('dateTo').value;
 
             return allNews.filter(news => {
+                // Filtrar artículos sin descripción válida o sin título
+                if (!news.description || !news.description.trim() || news.description === 'Sin descripción') {
+                    return false;
+                }
+                if (!news.title || !news.title.trim()) {
+                    return false;
+                }
+
                 const matchDiary = selectedDiary === 'Todos' || news.diary === selectedDiary;
                 const matchCategory = selectedCategory === 'Todos' || (news.category || 'General') === selectedCategory;
 
