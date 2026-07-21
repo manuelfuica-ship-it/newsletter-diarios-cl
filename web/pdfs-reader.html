@@ -588,13 +588,15 @@
                     if (!response.ok) throw new Error('Error en descarga');
 
                     const blob = await response.blob();
+                    // Convertir Blob a ArrayBuffer para almacenar más confiablemente
+                    const arrayBuffer = await blob.arrayBuffer();
 
                     // Save to IndexedDB
                     const pdf = {
                         id: pdfId,
                         name: remote.name,
-                        size: blob.size,
-                        data: blob,
+                        size: arrayBuffer.byteLength,
+                        data: arrayBuffer,
                         downloadedAt: new Date().toISOString()
                     };
 
@@ -641,10 +643,15 @@
                 document.getElementById('downloadBtn').style.display = 'none';
 
                 try {
-                    // Convertir Blob a ArrayBuffer si es necesario
+                    // Usar ArrayBuffer o Blob según lo que esté almacenado
                     let pdfData = pdf.data;
                     if (pdf.data instanceof Blob) {
                         pdfData = await pdf.data.arrayBuffer();
+                    }
+
+                    // Asegurar que es un Uint8Array para PDF.js
+                    if (pdfData instanceof ArrayBuffer) {
+                        pdfData = new Uint8Array(pdfData);
                     }
 
                     const pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
