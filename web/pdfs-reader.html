@@ -641,7 +641,13 @@
                 document.getElementById('downloadBtn').style.display = 'none';
 
                 try {
-                    const pdfDoc = await pdfjsLib.getDocument({ data: pdf.data }).promise;
+                    // Convertir Blob a ArrayBuffer si es necesario
+                    let pdfData = pdf.data;
+                    if (pdf.data instanceof Blob) {
+                        pdfData = await pdf.data.arrayBuffer();
+                    }
+
+                    const pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
                     this.totalPages = pdfDoc.numPages;
                     this.currentPDFDoc = pdfDoc;
                     this.renderPage(1);
@@ -649,6 +655,8 @@
                     this.updatePageNavigation();
                 } catch (error) {
                     console.error('PDF loading error:', error);
+                    document.getElementById('viewerContainer').innerHTML =
+                        '<div class="empty-state"><div class="empty-state-icon">❌</div><p>Error al cargar PDF: ' + error.message + '</p></div>';
                 }
             }
 
