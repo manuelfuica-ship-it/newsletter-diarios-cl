@@ -1052,6 +1052,12 @@
             if (e.target.id === 'newsModal') closeModal();
         });
 
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', loadNews);
         document.getElementById('dateFrom').valueAsDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         document.getElementById('dateTo').valueAsDate = new Date();
