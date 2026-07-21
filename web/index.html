@@ -676,8 +676,10 @@
                 </button>
             `).join('');
 
-            // Generar badges de categorías
-            const categories = ['Todos', ...new Set(allNews.map(n => n.category || 'General').filter(c => c))];
+            // Generar badges de categorías - incluir todas las categorías definidas
+            const allCategories = new Set(allNews.map(n => n.category || 'General'));
+            allCategories.add('Juego online y casinos');
+            const categories = ['Todos', ...Array.from(allCategories).sort()];
             const categoryBadges = document.getElementById('categoryBadges');
             categoryBadges.innerHTML = categories.map(category => `
                 <button class="category-badge ${selectedCategory === category ? 'active' : ''}" onclick="selectCategory('${category}'); filterNews()">
