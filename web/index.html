@@ -572,42 +572,37 @@
         <div class="last-update" id="lastUpdate"></div>
 
         <div class="tabs">
-            <button class="tab active" onclick="window.location.href='noticias.html'">📰 Noticias</button>
+            <button class="tab active" onclick="switchTab('news')">📰 Noticias</button>
             <button class="tab" onclick="switchTab('stats')">📊 Estadísticas</button>
             <button class="tab" onclick="window.location.href='pdfs-reader.html'">📖 Mis Ediciones</button>
             <button class="tab" onclick="window.location.href='settings.html'" style="margin-left: auto;">⚙️ Configuración</button>
         </div>
 
-        <div id="news" class="tab-content active">
-            <div class="filters">
-                <input type="search" id="searchInput" placeholder="Buscar noticias..." onkeyup="filterNews()">
-                <div class="filter-group">
-                    <label>Desde:</label>
-                    <input type="date" id="dateFrom" onchange="filterNews()">
+        <div id="news" class="tab-content active" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; padding: 20px;">
+            <!-- Sidebar -->
+            <aside style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; height: fit-content; position: sticky; top: 80px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #94a3b8; margin-bottom: 15px; padding: 0 8px; letter-spacing: 0.5px;">🔍 Buscar</div>
+                <input type="search" id="searchInput" placeholder="Buscar noticias..." onkeyup="filterNews()" style="width: 100%; padding: 10px; border: 1px solid #dce4ec; border-radius: 6px; font-size: 14px; margin-bottom: 20px;">
+
+                <div style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #94a3b8; margin-bottom: 12px; padding: 0 8px; letter-spacing: 0.5px;">📅 Filtrar fechas</div>
+                <input type="date" id="dateFrom" style="width: 100%; padding: 10px; border: 1px solid #dce4ec; border-radius: 6px; font-size: 14px; margin-bottom: 8px;" onchange="filterNews()">
+                <input type="date" id="dateTo" style="width: 100%; padding: 10px; border: 1px solid #dce4ec; border-radius: 6px; font-size: 14px; margin-bottom: 20px;" onchange="filterNews()">
+
+                <div style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #94a3b8; margin-bottom: 12px; padding: 0 8px; letter-spacing: 0.5px;">📰 Por Diario</div>
+                <div id="diaryBadges" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px;"></div>
+
+                <div style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #94a3b8; margin-bottom: 12px; padding: 0 8px; letter-spacing: 0.5px;">📂 Por Categoría</div>
+                <div id="categoryBadges" style="display: flex; flex-direction: column; gap: 6px;"></div>
+            </aside>
+
+            <!-- Contenido Principal -->
+            <section style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e0e6ed;">
+                    <h2 style="margin: 0; font-size: 20px; font-weight: 700; color: #2c3e50;">Noticias del Día</h2>
+                    <div id="resultCount" style="font-size: 14px; color: #94a3b8; font-weight: 600;">Cargando...</div>
                 </div>
-                <div class="filter-group">
-                    <label>Hasta:</label>
-                    <input type="date" id="dateTo" onchange="filterNews()">
-                </div>
-                <button onclick="downloadPDF()">📥 Descargar PDF</button>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <h4 style="color: #2c3e50; margin-bottom: 12px; font-size: 14px; font-weight: 600;">📰 Filtrar por Diario:</h4>
-                <div class="category-badges" id="diaryBadges"></div>
-            </div>
-
-            <div>
-                <h4 style="color: #2c3e50; margin-bottom: 12px; font-size: 14px; font-weight: 600;">📂 Filtrar por Categoría:</h4>
-                <div class="category-badges" id="categoryBadges"></div>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; margin-top: 20px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
-                <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #2c3e50;">Noticias</h3>
-                <div id="resultCount" style="font-size: 13px; color: #94a3b8;">Cargando...</div>
-            </div>
-
-            <div id="newsContainer" class="news-grid"></div>
+                <div id="newsContainer" class="news-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;"></div>
+            </section>
         </div>
 
         <div id="stats" class="tab-content">
