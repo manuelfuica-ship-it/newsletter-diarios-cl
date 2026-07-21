@@ -28,6 +28,12 @@ try:
 except ImportError:
     PDF_EXPORTER_AVAILABLE = False
 
+try:
+    from pdf_manifest import generate_manifest
+    PDF_MANIFEST_AVAILABLE = True
+except ImportError:
+    PDF_MANIFEST_AVAILABLE = False
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -500,6 +506,9 @@ def main():
         try:
             exporter = PDFExporter(credentials)
             exporter.export_all()
+            # Generar manifest después de descargar PDFs
+            if PDF_MANIFEST_AVAILABLE:
+                generate_manifest()
         except Exception as e:
             logger.error(f"Error en exportación de PDFs: {e}")
 
