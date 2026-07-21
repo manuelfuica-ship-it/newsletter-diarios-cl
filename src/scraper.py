@@ -22,6 +22,12 @@ try:
 except ImportError:
     PLAYWRIGHT_AVAILABLE = False
 
+try:
+    from pdf_exporter import PDFExporter
+    PDF_EXPORTER_AVAILABLE = True
+except ImportError:
+    PDF_EXPORTER_AVAILABLE = False
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -487,6 +493,15 @@ def main():
     except Exception as e:
         logger.error(f"Error parsing CREDENTIALS_JSON: {e}")
         return False
+
+    # Exportar PDFs si está disponible
+    if PDF_EXPORTER_AVAILABLE:
+        logger.info("Iniciando exportación de PDFs...")
+        try:
+            exporter = PDFExporter(credentials)
+            exporter.export_all()
+        except Exception as e:
+            logger.error(f"Error en exportación de PDFs: {e}")
 
     scraper = NewsletterScraper(credentials)
     newsletter = scraper.scrape_all()
