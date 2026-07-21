@@ -737,12 +737,26 @@
             const dateFrom = document.getElementById('dateFrom').value;
             const dateTo = document.getElementById('dateTo').value;
 
+            // Palabras clave que identifican secciones, no artículos
+            const sectionKeywords = [
+                'suplementos', 'clasificados', 'especiales', 'destacados del editor',
+                'portada', 'avisos económicos', 'cronica futuro', 'crónica futuro',
+                '[a]', '[b]', '[c]', '[d]', '[e]'
+            ];
+
             return allNews.filter(news => {
+                const titleLower = (news.title || '').toLowerCase();
+
                 // Filtrar artículos sin descripción válida o sin título
                 if (!news.description || !news.description.trim() || news.description === 'Sin descripción') {
                     return false;
                 }
                 if (!news.title || !news.title.trim()) {
+                    return false;
+                }
+
+                // Filtrar secciones y categorías que no son artículos reales
+                if (sectionKeywords.some(keyword => titleLower.includes(keyword))) {
                     return false;
                 }
 
