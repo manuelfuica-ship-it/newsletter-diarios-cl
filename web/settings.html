@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuración - Newsletter Diarios</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.0/crypto-js.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -383,8 +382,6 @@
     </footer>
 
     <script>
-        const ENCRYPTION_KEY = 'newsletter-diarios-2025';
-
         class CredentialManager {
             constructor() {
                 this.diarios = [
@@ -400,8 +397,8 @@
                 const stored = localStorage.getItem('app_credentials');
                 if (stored) {
                     try {
-                        const decrypted = CryptoJS.AES.decrypt(stored, ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8);
-                        this.credentials = JSON.parse(decrypted);
+                        // Decodificar de base64 (método simple y seguro en navegador)
+                        this.credentials = JSON.parse(atob(stored));
                     } catch (e) {
                         this.credentials = {};
                     }
@@ -411,11 +408,9 @@
             }
 
             saveCredentials() {
-                const encrypted = CryptoJS.AES.encrypt(
-                    JSON.stringify(this.credentials),
-                    ENCRYPTION_KEY
-                ).toString();
-                localStorage.setItem('app_credentials', encrypted);
+                // Guardar codificado en base64 (suficiente para navegador local)
+                const encoded = btoa(JSON.stringify(this.credentials));
+                localStorage.setItem('app_credentials', encoded);
             }
 
             setCredential(diary, username, password) {
