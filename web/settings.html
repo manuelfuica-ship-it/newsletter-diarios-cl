@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - Newsletter Diarios</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.0/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .credential-item {
+            background: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .credential-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .diary-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status.saved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.unsaved {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .btn-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .btn-danger:hover {
+            background: #f5c6cb;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab-btn {
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #0c5460;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 40px;
+            font-size: 12px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">← Volver al inicio</a>
+
+        <header>
+            <h1>⚙️ Configuración</h1>
+            <p>Gestiona tus credenciales y preferencias</p>
+        </header>
+
+        <div id="message" class="message"></div>
+
+        <div class="card">
+            <h2>🔐 Credenciales de Diarios</h2>
+
+            <div class="info-box">
+                <strong>🔒 Seguridad</strong>
+                Las credenciales se guardan encriptadas localmente en tu navegador.
+                Solo tú puedes acceder a ellas.
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('credenciales')">Mis Credenciales</button>
+                <button class="tab-btn" onclick="switchTab('export')">Exportar/Importar</button>
+            </div>
+
+            <div id="credenciales" class="tab-content active">
+                <div id="credentialsList"></div>
+            </div>
+
+            <div id="export" class="tab-content">
+                <div class="section">
+                    <label>Exportar como JSON</label>
+                    <p style="color: #666; font-size: 13px; margin-bottom: 10px;">
+                        Descarga tus credenciales encriptadas para respaldar o usar en otros dispositivos
+                    </p>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="exportCredentials()">📥 Descargar credenciales</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <label>Importar desde archivo</label>
+                    <p style="color: #666; font-size: 13px; margin-bottom: 10px;">
+                        Carga un archivo de credenciales previamente exportado
+                    </p>
+                    <input type="file" id="importFile" accept=".json" style="margin-bottom: 10px;">
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="importCredentials()">📤 Importar credenciales</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🗑️ Datos Almacenados</h2>
+
+            <div class="section">
+                <label>Limpiar todo el almacenamiento local</label>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
+                    Elimina todas las credenciales, PDFs y datos guardados en tu navegador
+                </p>
+                <button class="btn-danger" onclick="clearAllData()">🗑️ Limpiar todo</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Newsletter Diarios - Gestor de Credenciales Local</p>
+    </footer>
+
+    <script>
+        const ENCRYPTION_KEY = 'newsletter-diarios-2025';
+
+        class CredentialManager {
+            constructor() {
+                this.diarios = [
+                    { key: 'mercurio', nombre: 'El Mercurio' },
+                    { key: 'tercera', nombre: 'La Tercera' },
+                    { key: 'segunda', nombre: 'La Segunda' },
+                    { key: 'df', nombre: 'DF' }
+                ];
+                this.loadCredentials();
+            }
+
+            loadCredentials() {
+                const stored = localStorage.getItem('app_credentials');
+                if (stored) {
+                    try {
+                        const decrypted = CryptoJS.AES.decrypt(stored, ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8);
+                        this.credentials = JSON.parse(decrypted);
+                    } catch (e) {
+                        this.credentials = {};
+                    }
+                } else {
+                    this.credentials = {};
+                }
+            }
+
+            saveCredentials() {
+                const encrypted = CryptoJS.AES.encrypt(
+                    JSON.stringify(this.credentials),
+                    ENCRYPTION_KEY
+                ).toString();
+                localStorage.setItem('app_credentials', encrypted);
+            }
+
+            setCredential(diary, username, password) {
+                if (!this.credentials[diary]) {
+                    this.credentials[diary] = {};
+                }
+                this.credentials[diary].username = username;
+                this.credentials[diary].password = password;
+                this.saveCredentials();
+            }
+
+            getCredential(diary) {
+                return this.credentials[diary] || { username: '', password: '' };
+            }
+
+            deleteCredential(diary) {
+                delete this.credentials[diary];
+                this.saveCredentials();
+            }
+
+            render() {
+                let html = '';
+                this.diarios.forEach(diario => {
+                    const cred = this.getCredential(diario.key);
+                    const isSaved = cred.username && cred.password;
+
+                    html += `
+                        <div class="credential-item">
+                            <div class="credential-header">
+                                <span class="diary-name">${diario.nombre}</span>
+                                <span class="status ${isSaved ? 'saved' : 'unsaved'}">
+                                    ${isSaved ? '✓ Guardada' : '○ Sin guardar'}
+                                </span>
+                            </div>
+                            <div class="form-group">
+                                <label>Usuario/Email</label>
+                                <input type="text"
+                                       id="user_${diario.key}"
+                                       value="${cred.username || ''}"
+                                       placeholder="tu@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Contraseña</label>
+                                <input type="password"
+                                       id="pass_${diario.key}"
+                                       value="${cred.password || ''}"
+                                       placeholder="••••••••">
+                            </div>
+                            <div class="button-group">
+                                <button class="btn-primary btn-small"
+                                        onclick="manager.saveCredential('${diario.key}')">
+                                    💾 Guardar
+                                </button>
+                                ${isSaved ? `
+                                    <button class="btn-danger btn-small"
+                                            onclick="manager.deleteCredential('${diario.key}')">
+                                        🗑️ Eliminar
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('credentialsList').innerHTML = html;
+            }
+
+            saveCredential(diaryKey) {
+                const username = document.getElementById(`user_${diaryKey}`).value.trim();
+                const password = document.getElementById(`pass_${diaryKey}`).value.trim();
+
+                if (!username || !password) {
+                    showMessage('Por favor completa usuario y contraseña', 'error');
+                    return;
+                }
+
+                this.setCredential(diaryKey, username, password);
+                showMessage('Credenciales guardadas correctamente ✓', 'success');
+                this.render();
+            }
+
+            deleteCredential(diaryKey) {
+                if (confirm('¿Eliminar estas credenciales?')) {
+                    this.credentials[diaryKey] = {};
+                    this.saveCredentials();
+                    showMessage('Credenciales eliminadas', 'success');
+                    this.render();
+                }
+            }
+
+            export() {
+                const data = {
+                    credentials: this.credentials,
+                    exportedAt: new Date().toISOString()
+                };
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `credenciales-${new Date().getTime()}.json`;
+                link.click();
+                showMessage('Credenciales exportadas', 'success');
+            }
+
+            import(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.credentials) {
+                            this.credentials = data.credentials;
+                            this.saveCredentials();
+                            showMessage('Credenciales importadas correctamente ✓', 'success');
+                            this.render();
+                        } else {
+                            showMessage('Formato de archivo incorrecto', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('Error al leer archivo: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        const manager = new CredentialManager();
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message show ${type}`;
+            setTimeout(() => msg.classList.remove('show'), 4000);
+        }
+
+        function exportCredentials() {
+            manager.export();
+        }
+
+        function importCredentials() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) {
+                showMessage('Selecciona un archivo', 'error');
+                return;
+            }
+            manager.import(file);
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ Esto eliminará TODAS las credenciales y PDFs. ¿Estás seguro?')) {
+                if (confirm('Esto no se puede deshacer. ¿Realmente deseas continuar?')) {
+                    localStorage.clear();
+                    indexedDB.databases().then(dbs => {
+                        dbs.forEach(db => indexedDB.deleteDatabase(db.name));
+                    });
+                    showMessage('Todos los datos han sido eliminados', 'success');
+                    setTimeout(() => window.location.href = 'index.html', 2000);
+                }
+            }
+        }
+
+        // Initial render
+        manager.render();
+    </script>
+</body>
+</html>
