@@ -354,6 +354,10 @@
                     return;
                 }
 
+                // Asegurar que siempre comience con "Todos"
+                selectedDiary = 'Todos';
+                selectedCategory = 'Todos';
+
                 updateSummary();
                 renderFilters();
                 renderNews();

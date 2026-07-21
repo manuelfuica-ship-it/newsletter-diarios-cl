@@ -380,6 +380,14 @@
             <p>Almacenadas localmente</p>
         </div>
 
+        <div style="padding: 12px 15px; border-bottom: 1px solid #e0e0e0; background: #f9f9f9;">
+            <div style="font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px;">Filtrar por fecha</div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <input type="date" id="dateFromFilter" style="font-size: 12px; padding: 6px; border: 1px solid #e0e0e0; border-radius: 4px;" onchange="app.filterByDate()">
+                <input type="date" id="dateToFilter" style="font-size: 12px; padding: 6px; border: 1px solid #e0e0e0; border-radius: 4px;" onchange="app.filterByDate()">
+            </div>
+        </div>
+
         <div class="sidebar-content" id="sidebarContent">
             <div class="empty-state">
                 <div class="empty-state-icon">📂</div>
@@ -455,6 +463,8 @@
                 this.totalPages = 0;
                 this.remotePDFs = [];
                 this.localPDFs = new Map();
+                this.dateFrom = null;
+                this.dateTo = null;
                 this.init();
             }
 
@@ -523,10 +533,45 @@
                 }
             }
 
+            filterByDate() {
+                this.dateFrom = document.getElementById('dateFromFilter').value;
+                this.dateTo = document.getElementById('dateToFilter').value;
+                this.renderSidebar();
+            }
+
+            matchesDateFilter(pdfName) {
+                // Extraer fecha del nombre: "LaSegunda-21072026.pdf" -> "21072026"
+                const match = pdfName.match(/(\d{8})\.pdf$/);
+                if (!match) return true;
+
+                const dateStr = match[1]; // DDMMYYYY
+                const day = parseInt(dateStr.substring(0, 2), 10);
+                const month = parseInt(dateStr.substring(2, 4), 10);
+                const year = parseInt(dateStr.substring(4, 8), 10);
+
+                const pdfDate = new Date(year, month - 1, day);
+
+                if (this.dateFrom) {
+                    const fromDate = new Date(this.dateFrom);
+                    if (pdfDate < fromDate) return false;
+                }
+
+                if (this.dateTo) {
+                    const toDate = new Date(this.dateTo);
+                    if (pdfDate > toDate) return false;
+                }
+
+                return true;
+            }
+
             renderSidebar() {
                 const container = document.getElementById('sidebarContent');
 
-                if (this.localPDFs.size === 0 && this.remotePDFs.length === 0) {
+                // Filtrar PDFs por fecha
+                const filteredLocal = Array.from(this.localPDFs.values()).filter(pdf => this.matchesDateFilter(pdf.name));
+                const filteredRemote = this.remotePDFs.filter(pdf => this.matchesDateFilter(pdf.name));
+
+                if (filteredLocal.length === 0 && filteredRemote.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
                             <div class="empty-state-icon">📂</div>
@@ -538,15 +583,15 @@
 
                 let html = '';
 
-                // PDFs locales
-                if (this.localPDFs.size > 0) {
+                // PDFs locales (filtrados)
+                if (filteredLocal.length > 0) {
                     html += '<div class="section">';
                     html += '<div class="section-title">📱 En tu dispositivo</div>';
-                    this.localPDFs.forEach((pdf, id) => {
+                    filteredLocal.forEach((pdf) => {
                         const sizeMB = (pdf.size / (1024 * 1024)).toFixed(1);
                         html += `
-                            <div class="pdf-item ${this.currentPDF?.id === id ? 'active' : ''}"
-                                 onclick="app.openPDF('${id}')">
+                            <div class="pdf-item ${this.currentPDF?.id === pdf.id ? 'active' : ''}"
+                                 onclick="app.openPDF('${pdf.id}')">
                                 <div class="pdf-item-name">${pdf.name}</div>
                                 <div class="pdf-item-size">${sizeMB} MB • Local</div>
                             </div>
@@ -555,8 +600,8 @@
                     html += '</div>';
                 }
 
-                // PDFs remotos no descargados
-                const notDownloaded = this.remotePDFs.filter(r => !this.localPDFs.has(r.id));
+                // PDFs remotos no descargados (filtrados)
+                const notDownloaded = filteredRemote.filter(r => !this.localPDFs.has(r.id));
                 if (notDownloaded.length > 0) {
                     html += '<div class="section">';
                     html += '<div class="section-title">🌐 Disponibles en línea</div>';
