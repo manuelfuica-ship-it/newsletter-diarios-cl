@@ -762,10 +762,11 @@
                     return false;
                 }
 
-                // Solo filtrar si hay descripción: excluir si es "Sin descripción" o idéntica al título
+                // Filtrar si hay descripción y es idéntica al título (pero permitir fallbacks y descripciones vacías)
                 if (news.description && news.description.trim() && news.description !== 'Sin descripción') {
                     const descriptionStart = news.description.split('\n')[0].trim();
-                    if (descriptionStart === news.title.trim()) {
+                    // Solo filtrar si es exactamente igual (ignorar fallbacks de "[Haz clic...")
+                    if (descriptionStart === news.title.trim() && !news.description.includes('[Haz clic')) {
                         return false;
                     }
                 }
@@ -809,7 +810,20 @@
             const article = allNews[index];
             document.getElementById('modalTitle').textContent = article.title;
             document.getElementById('modalSource').textContent = article.diary;
-            document.getElementById('modalLink').href = article.link;
+
+            // Construir URL completa si es una ruta relativa
+            let fullLink = article.link;
+            if (article.link && !article.link.startsWith('http')) {
+                if (article.diary === 'La Segunda') {
+                    fullLink = `https://www.lasegunda.com${article.link}`;
+                } else if (article.diary === 'El Mercurio') {
+                    fullLink = `https://www.elmercurio.com${article.link}`;
+                } else if (article.diary === 'DF') {
+                    fullLink = `https://www.df.cl${article.link}`;
+                }
+            }
+
+            document.getElementById('modalLink').href = fullLink;
 
             // Mostrar contenido completo del artículo
             const content = document.getElementById('modalContent');
