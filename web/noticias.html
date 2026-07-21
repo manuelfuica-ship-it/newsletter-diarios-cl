@@ -3,108 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noticias - Newsletter Diarios</title>
+    <title>Noticias del Día - Newsletter</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        html, body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
-            height: 100%;
-            color: #0f172a;
+        :root {
+            --primary: #667eea;
+            --primary-dark: #764ba2;
+            --primary-soft: #f3f4ff;
+            --bg: #f8fafc;
+            --surface: #f1f5f9;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-soft: #475569;
+            --text-mute: #94a3b8;
+            --danger: #dc2626;
+            --success: #10b981;
         }
 
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text); background: var(--bg); height: 100%; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
 
-        /* Header */
-        header {
+        /* Topbar */
+        header.topbar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 16px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            padding: 14px 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,.1);
+            position: sticky; top: 0; z-index: 10;
         }
 
-        .header-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
+        .topbar-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; max-width: 1400px; margin: 0 auto; width: 100%; }
+        .topbar h1 { margin: 0; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .topbar-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; align-items: center; }
 
-        header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .header-actions input[type="search"] {
+        .topbar input[type="search"] {
             background: rgba(255,255,255,.15);
             border: 1px solid rgba(255,255,255,.25);
             color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 7px 12px;
+            border-radius: 8px;
             font-size: 13px;
             min-width: 200px;
         }
 
-        .header-actions input[type="search"]::placeholder {
-            color: rgba(255,255,255,.7);
-        }
+        .topbar input[type="search"]::placeholder { color: rgba(255,255,255,.7); }
 
         .btn {
             background: white;
-            color: #667eea;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 7px 12px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
             font-size: 13px;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            font-weight: 500;
+            transition: all .15s;
+            font-family: inherit;
+            display: inline-flex; align-items: center; gap: 5px;
         }
 
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0,0,0,.15);
-        }
+        .btn:hover { background: var(--surface); transform: translateY(-1px); }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary-dark); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-ghost { background: rgba(255,255,255,.15); color: white; border-color: rgba(255,255,255,.25); }
+        .btn-ghost:hover { background: rgba(255,255,255,.25); }
 
-        .btn-secondary {
-            background: rgba(255,255,255,.2);
-            color: white;
-            border: 1px solid rgba(255,255,255,.3);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255,255,255,.3);
-        }
-
-        /* Main Container */
+        /* Main Layout */
         main {
             display: grid;
-            grid-template-columns: 220px 1fr;
+            grid-template-columns: 280px 1fr;
             gap: 14px;
             padding: 14px 20px;
             max-width: 1400px;
@@ -114,301 +81,260 @@
         }
 
         /* Sidebar */
-        aside {
+        aside.sidebar {
             background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
             padding: 12px;
             height: fit-content;
             position: sticky;
-            top: 70px;
+            top: 80px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
         }
 
-        .filter-section {
-            margin-bottom: 15px;
+        .sidebar-section {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
         }
 
-        .filter-title {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: 8px;
-            padding: 0 8px;
-            letter-spacing: 0.5px;
+        .sidebar-section:last-child { border-bottom: none; }
+
+        .sidebar-title { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-mute); margin: 8px 0 8px 10px; letter-spacing: .5px; }
+
+        .filter-item {
+            padding: 7px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: background .12s;
         }
 
-        .filter-list {
-            list-style: none;
+        .filter-item:hover { background: var(--surface); }
+        .filter-item.active { background: var(--primary-soft); color: var(--primary-dark); font-weight: 600; }
+
+        .filter-count { font-size: 11px; background: var(--surface); color: var(--text-mute); padding: 1px 7px; border-radius: 10px; font-weight: 600; }
+        .filter-item.active .filter-count { background: white; color: var(--primary); }
+
+        /* Content */
+        section.content {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            min-height: calc(100vh - 90px);
+        }
+
+        .content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .content-header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+        .content-actions { display: flex; gap: 8px; }
+
+        /* Resumen del día */
+        .daily-summary {
+            background: linear-gradient(135deg, #f3f4ff 0%, #ede9fe 100%);
+            border: 1px solid #ddd6fe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .summary-item {
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
 
-        .filter-item {
-            padding: 8px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            background: #f1f5f9;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
+        .summary-value { font-size: 24px; font-weight: 700; color: var(--primary); }
+        .summary-label { font-size: 12px; color: var(--text-soft); }
 
-        .filter-item:hover {
-            background: #e2e8f0;
-        }
-
-        .filter-item.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        /* Content */
-        .news-list {
-            display: flex;
-            flex-direction: column;
+        /* News Grid */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 12px;
         }
 
         .news-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
-            transition: all 0.2s;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
             cursor: pointer;
-        }
-
-        .news-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 12px rgba(102, 126, 234, .15);
-            transform: translateY(-1px);
-        }
-
-        .news-header {
+            transition: all .12s;
             display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
+            flex-direction: column;
+            gap: 8px;
         }
+
+        .news-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(102, 126, 234,.1); }
 
         .news-source {
             display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 11px;
             font-weight: 600;
+            font-size: 11px;
+            color: white;
+            background: var(--primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            width: fit-content;
         }
 
         .news-category {
             display: inline-block;
-            background: #f1f5f9;
-            color: #0f172a;
-            padding: 4px 10px;
-            border-radius: 4px;
+            font-weight: 500;
             font-size: 11px;
-            font-weight: 600;
-        }
-
-        .news-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #0f172a;
-            line-height: 1.4;
-        }
-
-        .news-description {
-            font-size: 13px;
-            color: #475569;
-            margin-bottom: 12px;
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .news-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #94a3b8;
-        }
-
-        .news-date {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .news-link {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 6px 12px;
+            color: var(--primary);
+            background: var(--primary-soft);
+            padding: 2px 8px;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s;
+            width: fit-content;
         }
 
-        .news-link:hover {
-            background: #764ba2;
-            transform: translateY(-1px);
-        }
+        .news-title { font-weight: 600; font-size: 14px; line-height: 1.4; margin: 0; }
+        .news-description { font-size: 12px; color: var(--text-soft); line-height: 1.5; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .news-date { font-size: 11px; color: var(--text-mute); }
 
         .empty-state {
-            grid-column: 1 / -1;
             text-align: center;
-            padding: 60px 40px;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            padding: 40px 20px;
+            color: var(--text-mute);
         }
 
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .empty-state h2 {
-            color: #0f172a;
-            margin-bottom: 10px;
-        }
-
-        .empty-state p {
-            color: #64748b;
-            font-size: 13px;
-        }
+        .empty-state .icon { font-size: 56px; margin-bottom: 14px; }
+        .empty-state h3 { color: var(--text-soft); margin: 0 0 8px; }
+        .empty-state p { margin: 0 0 14px; font-size: 13px; }
 
         /* Modal */
-        .modal {
-            display: none;
+        .modal-backdrop {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,.5);
-            z-index: 1000;
+            inset: 0;
+            background: rgba(15,23,42,.7);
+            display: none;
             align-items: center;
             justify-content: center;
+            z-index: 100;
             padding: 20px;
         }
 
-        .modal.active {
-            display: flex;
-        }
+        .modal-backdrop.active { display: flex; }
 
-        .modal-content {
+        .modal {
             background: white;
-            border-radius: 10px;
-            max-width: 800px;
-            width: 100%;
-            max-height: 85vh;
-            overflow-y: auto;
-            padding: 40px;
-        }
-
-        .modal-close {
-            float: right;
-            font-size: 24px;
-            cursor: pointer;
-            color: #94a3b8;
-            border: none;
-            background: none;
-        }
-
-        .modal-close:hover {
-            color: #0f172a;
-        }
-
-        .modal-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #0f172a;
-        }
-
-        .modal-meta {
+            border-radius: 12px;
+            max-width: 90vw;
+            width: 800px;
+            max-height: 90vh;
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #64748b;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,.3);
         }
 
-        .modal-body {
-            color: #0f172a;
-            line-height: 1.7;
-            font-size: 14px;
+        .modal-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-between;
         }
 
-        .modal-body p {
-            margin-bottom: 15px;
-        }
+        .modal-header h3 { margin: 0; font-size: 16px; flex: 1; word-break: break-word; }
+        .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-mute); }
+        .modal-close:hover { color: var(--text); }
+
+        .modal-body { padding: 20px; overflow: auto; flex: 1; color: var(--text); line-height: 1.7; font-size: 14px; }
+        .modal-body p { margin: 0 0 15px 0; }
+
+        .modal-meta { display: flex; gap: 15px; margin-bottom: 15px; font-size: 13px; color: var(--text-soft); }
 
         @media (max-width: 768px) {
-            main {
-                grid-template-columns: 1fr;
-            }
-
-            aside {
-                display: none;
-            }
-
-            header h1 {
-                font-size: 18px;
-            }
-
-            .header-actions {
-                width: 100%;
-            }
-
-            .header-actions input {
-                flex: 1;
-                min-width: 0;
-            }
+            main { grid-template-columns: 1fr; }
+            aside { display: none; }
+            .news-grid { grid-template-columns: 1fr; }
+            .topbar { padding: 10px 14px; }
+            .topbar h1 { font-size: 16px; }
+            .topbar input { min-width: 0; flex: 1; }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-inner">
-            <h1>📰 Noticias</h1>
-            <div class="header-actions">
-                <input type="search" id="searchInput" placeholder="Buscar noticias...">
-                <button class="btn" onclick="location.href='index.html'">← Volver</button>
-                <button class="btn btn-secondary" onclick="loadNews()">🔄 Actualizar</button>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <h1>📰 Noticias del Día</h1>
+            <div class="topbar-actions">
+                <input type="search" id="searchInput" placeholder="Buscar...">
+                <button class="btn btn-ghost" onclick="location.href='index.html'">← Volver</button>
+                <button class="btn btn-ghost" onclick="loadNews()">🔄 Actualizar</button>
             </div>
         </div>
     </header>
 
     <main>
-        <aside>
-            <div class="filter-section">
-                <div class="filter-title">Diario</div>
-                <ul class="filter-list" id="diaryFilter"></ul>
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Por Diario</div>
+                <div id="diaryFilters"></div>
             </div>
-            <div class="filter-section">
-                <div class="filter-title">Categoría</div>
-                <ul class="filter-list" id="categoryFilter"></ul>
+            <div class="sidebar-section">
+                <div class="sidebar-title">Por Categoría</div>
+                <div id="categoryFilters"></div>
             </div>
         </aside>
 
-        <div class="news-list" id="newsList"></div>
+        <section class="content">
+            <div class="content-header">
+                <h2>Resumen del Día</h2>
+            </div>
+
+            <div class="daily-summary" id="summarySummary">
+                <div class="summary-item">
+                    <div class="summary-value" id="totalCount">0</div>
+                    <div class="summary-label">Noticias Totales</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="diaryCount">0</div>
+                    <div class="summary-label">Diarios Activos</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="categoryCount">0</div>
+                    <div class="summary-label">Categorías</div>
+                </div>
+            </div>
+
+            <div class="content-header" style="margin-top: 20px;">
+                <h2>Noticias</h2>
+                <div id="resultCount" style="font-size: 13px; color: var(--text-mute);">Cargando...</div>
+            </div>
+
+            <div class="news-grid" id="newsList"></div>
+        </section>
     </main>
 
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()">✕</button>
-            <div id="modalBody"></div>
+    <div class="modal-backdrop" id="modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle"></h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 
@@ -423,50 +349,62 @@
                 if (!response.ok) throw new Error('Error cargando datos');
 
                 allNews = await response.json();
-                console.log('Noticias cargadas:', allNews.length);
-
                 if (!allNews || allNews.length === 0) {
-                    document.getElementById('newsList').innerHTML =
-                        '<div class="empty-state"><div class="empty-icon">📭</div><h2>Sin noticias</h2><p>No hay noticias disponibles</p></div>';
+                    showEmpty();
                     return;
                 }
 
+                updateSummary();
                 renderFilters();
                 renderNews();
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('newsList').innerHTML =
-                    '<div class="empty-state"><div class="empty-icon">⚠️</div><h2>Error</h2><p>' + error.message + '</p></div>';
+                showError(error.message);
             }
         }
 
-        function renderFilters() {
-            // Diarios
-            const diaries = ['Todos', ...new Set(allNews.map(n => n.diary))];
-            document.getElementById('diaryFilter').innerHTML = diaries.map(diary => `
-                <li class="filter-item ${diary === selectedDiary ? 'active' : ''}"
-                    onclick="filterByDiary('${diary}')">
-                    ${diary}
-                </li>
-            `).join('');
+        function updateSummary() {
+            const diaries = new Set(allNews.map(n => n.diary)).size;
+            const categories = new Set(allNews.map(n => n.category || 'General')).size;
 
-            // Categorías
-            const categories = ['Todos', ...new Set(allNews.map(n => n.category || 'General'))];
-            document.getElementById('categoryFilter').innerHTML = categories.map(cat => `
-                <li class="filter-item ${cat === selectedCategory ? 'active' : ''}"
-                    onclick="filterByCategory('${cat}')">
-                    ${cat}
-                </li>
-            `).join('');
+            document.getElementById('totalCount').textContent = allNews.length;
+            document.getElementById('diaryCount').textContent = diaries;
+            document.getElementById('categoryCount').textContent = categories;
         }
 
-        function filterByDiary(diary) {
+        function renderFilters() {
+            // Diarios con conteo
+            const diaries = ['Todos', ...new Set(allNews.map(n => n.diary))];
+            document.getElementById('diaryFilters').innerHTML = diaries.map(d => {
+                const count = d === 'Todos' ? allNews.length : allNews.filter(n => n.diary === d).length;
+                return `
+                    <div class="filter-item ${d === selectedDiary ? 'active' : ''}" onclick="selectDiary('${d}')">
+                        <span>${d}</span>
+                        <span class="filter-count">${count}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Categorías con conteo
+            const categories = ['Todos', ...new Set(allNews.map(n => n.category || 'General'))];
+            document.getElementById('categoryFilters').innerHTML = categories.map(c => {
+                const count = c === 'Todos' ? allNews.length : allNews.filter(n => (n.category || 'General') === c).length;
+                return `
+                    <div class="filter-item ${c === selectedCategory ? 'active' : ''}" onclick="selectCategory('${c}')">
+                        <span>${c}</span>
+                        <span class="filter-count">${count}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectDiary(diary) {
             selectedDiary = diary;
             renderFilters();
             renderNews();
         }
 
-        function filterByCategory(category) {
+        function selectCategory(category) {
             selectedCategory = category;
             renderFilters();
             renderNews();
@@ -475,65 +413,47 @@
         function renderNews() {
             const search = document.getElementById('searchInput').value.toLowerCase();
 
-            const filtered = allNews.filter(news => {
-                const matchDiary = selectedDiary === 'Todos' || news.diary === selectedDiary;
-                const matchCategory = selectedCategory === 'Todos' || (news.category || 'General') === selectedCategory;
-                const matchSearch = !search ||
-                    news.title.toLowerCase().includes(search) ||
-                    (news.description || '').toLowerCase().includes(search);
-
+            const filtered = allNews.filter(n => {
+                const matchDiary = selectedDiary === 'Todos' || n.diary === selectedDiary;
+                const matchCategory = selectedCategory === 'Todos' || (n.category || 'General') === selectedCategory;
+                const matchSearch = !search || n.title.toLowerCase().includes(search) || (n.description || '').toLowerCase().includes(search);
                 return matchDiary && matchCategory && matchSearch;
             });
 
-            const container = document.getElementById('newsList');
+            document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length !== 1 ? 's' : ''}`;
 
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="empty-state" style="grid-column: 1"><div class="empty-icon">📭</div><h2>Sin resultados</h2><p>Intenta cambiar los filtros</p></div>';
+                document.getElementById('newsList').innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>Sin resultados</h3><p>Intenta cambiar los filtros</p></div>';
                 return;
             }
 
-            container.innerHTML = filtered.map((news, idx) => `
-                <div class="news-card" onclick="openModal(${allNews.indexOf(news)})">
-                    <div class="news-header">
-                        <span class="news-source">${news.diary}</span>
-                        <span class="news-category">${news.category || 'General'}</span>
+            document.getElementById('newsList').innerHTML = filtered.map((n, i) => `
+                <div class="news-card" onclick="openModal('${escapeAttr(n.title)}', '${escapeAttr(n.diary)}', '${escapeAttr(n.category || 'General')}', '${escapeAttr(n.description || '')}', '${n.published || n.timestamp}', '${escapeAttr(n.link)}')">
+                    <div>
+                        <span class="news-source">${n.diary}</span>
+                        <span class="news-category">${n.category || 'General'}</span>
                     </div>
-                    <h3 class="news-title">${escapeHtml(news.title)}</h3>
-                    <p class="news-description">${escapeHtml(news.description || 'Sin descripción')}</p>
-                    <div class="news-footer">
-                        <span class="news-date">📅 ${formatDate(news.published || news.timestamp)}</span>
-                        <button class="news-link">Leer más →</button>
-                    </div>
+                    <h3 class="news-title">${escapeHtml(n.title)}</h3>
+                    <p class="news-description">${escapeHtml(n.description || '')}</p>
+                    <div class="news-date">📅 ${formatDate(n.published || n.timestamp)}</div>
                 </div>
             `).join('');
         }
 
-        function openModal(index) {
-            const news = allNews[index];
-            if (!news) return;
-
-            const modal = document.getElementById('modal');
-            const body = document.getElementById('modalBody');
-
-            body.innerHTML = `
-                <button class="modal-close" onclick="closeModal()">✕</button>
-                <div class="modal-title">${escapeHtml(news.title)}</div>
+        function openModal(title, diary, category, description, date, link) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = `
                 <div class="modal-meta">
-                    <strong>${news.diary}</strong>
-                    <span>${news.category || 'General'}</span>
-                    <span>📅 ${formatDate(news.published || news.timestamp)}</span>
+                    <strong>${diary}</strong>
+                    <span>${category}</span>
+                    <span>📅 ${formatDate(date)}</span>
                 </div>
-                <div class="modal-body">
-                    ${(news.description || '').split('\n').map(p => p.trim()).filter(p => p).map(p => `<p>${escapeHtml(p)}</p>`).join('')}
-                </div>
+                ${(description || '').split('\\n').map(p => p.trim()).filter(p => p).map(p => `<p>${escapeHtml(p)}</p>`).join('')}
                 <div style="margin-top: 20px;">
-                    <a href="${news.link}" target="_blank" class="btn" style="color: white; background: #667eea; text-decoration: none;">
-                        Abrir en ${news.diary} →
-                    </a>
+                    <a href="${link}" target="_blank" class="btn btn-primary">Leer en ${diary} →</a>
                 </div>
             `;
-
-            modal.classList.add('active');
+            document.getElementById('modal').classList.add('active');
         }
 
         function closeModal() {
@@ -546,6 +466,10 @@
             return div.innerHTML;
         }
 
+        function escapeAttr(text) {
+            return (text || '').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+        }
+
         function formatDate(dateStr) {
             try {
                 const date = new Date(dateStr);
@@ -556,10 +480,15 @@
             }
         }
 
-        // Búsqueda en tiempo real
-        document.getElementById('searchInput')?.addEventListener('keyup', renderNews);
+        function showEmpty() {
+            document.getElementById('newsList').innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>Sin noticias</h3><p>No hay noticias disponibles</p></div>';
+        }
 
-        // Cargar al iniciar
+        function showError(msg) {
+            document.getElementById('newsList').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Error</h3><p>${msg}</p></div>`;
+        }
+
+        document.getElementById('searchInput')?.addEventListener('keyup', renderNews);
         loadNews();
     </script>
 </body>
