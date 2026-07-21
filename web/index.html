@@ -737,27 +737,27 @@
             const dateFrom = document.getElementById('dateFrom').value;
             const dateTo = document.getElementById('dateTo').value;
 
-            // Palabras clave que identifican secciones, no artículos
-            const sectionKeywords = [
+            // Títulos exactos que son secciones, no artículos
+            const sectionTitles = [
                 'suplementos', 'clasificados', 'especiales', 'destacados del editor',
                 'portada', 'avisos económicos', 'cronica futuro', 'crónica futuro',
-                '[a]', '[b]', '[c]', '[d]', '[e]',
+                'economía y negocios', 'artes y letras', 'cartas y opinión',
                 'market data', 'editar perfil', 'suscripción', 'perfil usuario',
-                'credencial', 'últimas noticias', 'internacional', 'financial times',
+                'credencial soy df', 'últimas noticias', 'financial times',
                 'mujeres en acción', 'somos financieras', 'avisos legales', 'indicadores',
                 'comparador de fondos', 'laboratorio de contenidos'
             ];
 
             return allNews.filter(news => {
-                const titleLower = (news.title || '').toLowerCase();
+                const titleLower = (news.title || '').toLowerCase().trim();
 
                 // Filtrar artículos sin título
                 if (!news.title || !news.title.trim()) {
                     return false;
                 }
 
-                // Filtrar secciones y categorías que no son artículos reales
-                if (sectionKeywords.some(keyword => titleLower.includes(keyword))) {
+                // Filtrar títulos que son exactamente secciones (no si solo contienen la palabra)
+                if (sectionTitles.includes(titleLower) || /^\[.+\]\s*/.test(titleLower)) {
                     return false;
                 }
 
