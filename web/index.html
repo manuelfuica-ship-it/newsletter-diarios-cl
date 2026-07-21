@@ -747,10 +747,7 @@
             return allNews.filter(news => {
                 const titleLower = (news.title || '').toLowerCase();
 
-                // Filtrar artículos sin descripción válida o sin título
-                if (!news.description || !news.description.trim() || news.description === 'Sin descripción') {
-                    return false;
-                }
+                // Filtrar artículos sin título
                 if (!news.title || !news.title.trim()) {
                     return false;
                 }
@@ -760,10 +757,12 @@
                     return false;
                 }
 
-                // Filtrar artículos donde la descripción es idéntica al título
-                const descriptionStart = news.description.split('\n')[0].trim();
-                if (descriptionStart === news.title.trim()) {
-                    return false;
+                // Solo filtrar si hay descripción: excluir si es "Sin descripción" o idéntica al título
+                if (news.description && news.description.trim() && news.description !== 'Sin descripción') {
+                    const descriptionStart = news.description.split('\n')[0].trim();
+                    if (descriptionStart === news.title.trim()) {
+                        return false;
+                    }
                 }
 
                 const matchDiary = selectedDiary === 'Todos' || news.diary === selectedDiary;
