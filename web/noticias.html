@@ -445,7 +445,7 @@
             const diaries = ['Todos', ...new Set(allNews.map(n => n.diary))];
             document.getElementById('diaryFilter').innerHTML = diaries.map(diary => `
                 <li class="filter-item ${diary === selectedDiary ? 'active' : ''}"
-                    onclick="selectedDiary='${diary}'; renderNews(); updateFilters();">
+                    onclick="filterByDiary('${diary}')">
                     ${diary}
                 </li>
             `).join('');
@@ -454,17 +454,22 @@
             const categories = ['Todos', ...new Set(allNews.map(n => n.category || 'General'))];
             document.getElementById('categoryFilter').innerHTML = categories.map(cat => `
                 <li class="filter-item ${cat === selectedCategory ? 'active' : ''}"
-                    onclick="selectedCategory='${cat}'; renderNews(); updateFilters();">
+                    onclick="filterByCategory('${cat}')">
                     ${cat}
                 </li>
             `).join('');
         }
 
-        function updateFilters() {
-            document.querySelectorAll('.filter-item').forEach(el => {
-                el.classList.remove('active');
-            });
-            document.querySelectorAll(`.filter-item:contains("${selectedDiary}"), .filter-item:contains("${selectedCategory}")`);
+        function filterByDiary(diary) {
+            selectedDiary = diary;
+            renderFilters();
+            renderNews();
+        }
+
+        function filterByCategory(category) {
+            selectedCategory = category;
+            renderFilters();
+            renderNews();
         }
 
         function renderNews() {
