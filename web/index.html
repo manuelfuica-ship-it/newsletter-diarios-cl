@@ -654,6 +654,7 @@
 
         async function loadNews() {
             try {
+                // v2.1 - Categoría Juego online y casinos agregada
                 const response = await fetch('data/news.json?t=' + Date.now());
                 allNews = await response.json();
                 renderNews();
